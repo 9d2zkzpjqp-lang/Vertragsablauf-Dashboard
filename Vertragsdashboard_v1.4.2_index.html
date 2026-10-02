@@ -1,0 +1,1666 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vertragsdashboard – Kooperationsverträge v1.4.2</title>
+<style>
+:root{
+  --bg:#f4f6fa;--card:#fff;--text:#1f2937;--muted:#6b7280;--line:#d9dee8;
+  --blue:#3e6fb6;--blue2:#eaf1fb;--green:#2f7d4a;--green2:#eaf6ee;
+  --yellow:#93620d;--yellow2:#fff4d8;--red:#a43a3a;--red2:#fdeaea;
+  --violet:#6552a0;--violet2:#f0ecfb;--gray2:#eef1f5;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--text)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.wrap{max-width:1450px;margin:0 auto;padding:22px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}
+h1{margin:0;font-size:28px}
+.sub{font-size:13px;color:var(--muted);margin-top:4px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px 12px;color:var(--text)}
+.btn:hover{background:#fafbfc}
+.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn.small{padding:6px 9px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.roundbar{display:flex;align-items:center;justify-content:space-between;gap:14px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:16px}
+.roundleft{display:flex;gap:10px;align-items:center}
+.roundleft select{font-weight:700;border:1px solid var(--line);border-radius:8px;padding:7px;background:#fff}
+.roundstats{display:flex;gap:22px;flex-wrap:wrap;align-items:center}
+.statmini b{display:block;font-size:11px;color:var(--muted);margin-bottom:2px}
+.backupflag{font-size:12px;padding:6px 9px;border-radius:999px;background:var(--yellow2);color:var(--yellow)}
+.backupflag.ok{background:var(--green2);color:var(--green)}
+.backupflag.unknown{background:var(--gray2);color:#5f6772}
+.exportReminder{display:none;align-items:center;justify-content:space-between;gap:12px;background:var(--yellow2);border:1px solid #ead28f;border-radius:11px;padding:9px 12px;margin:-6px 0 16px;font-size:12px;color:var(--yellow)}
+.exportReminder.show{display:flex}
+.exportReminderText b{display:block;margin-bottom:2px}
+.exportReminder .btn{background:#fff}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px}
+.kpi strong{display:block;font-size:23px}.kpi small{color:var(--muted)}
+.kpi.red{background:var(--red2)}.kpi.yellow{background:var(--yellow2)}.kpi.green{background:var(--green2)}
+.twocol{display:grid;grid-template-columns:1fr 1.1fr;gap:16px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+.panel h2{font-size:18px;margin:0 0 12px}
+.list{display:grid;gap:8px}
+.item{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:start;padding:10px;border:1px solid var(--line);border-radius:10px}
+.urgentItem{cursor:pointer;transition:background .15s ease,border-color .15s ease}
+.urgentItem:hover{background:#fbfcff;border-color:#cbd6e5}
+.urgentItem:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.item.redline{border-left:4px solid var(--red)}
+.item.yellowline{border-left:4px solid #d0a02d}
+.item.blueline{border-left:4px solid var(--blue)}
+.badge{font-size:11px;font-weight:700;border-radius:999px;padding:3px 7px;display:inline-block}
+.badge.red{background:var(--red2);color:var(--red)}
+.badge.yellow{background:var(--yellow2);color:var(--yellow)}
+.badge.blue{background:var(--blue2);color:var(--blue)}
+.badge.green{background:var(--green2);color:var(--green)}
+.badge.violet{background:var(--violet2);color:var(--violet)}
+.badge.gray{background:var(--gray2);color:#5f6772}
+.muted{color:var(--muted);font-size:12px}
+.agendaRow{display:grid;grid-template-columns:82px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.agendaRow:last-child{border-bottom:0}
+.agendaDate{font-weight:700;font-size:13px}
+.sectionTitle{margin:22px 0 9px;font-size:19px}
+.partnergrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.partner{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px;cursor:pointer;transition:.12s}
+.partner:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(20,30,50,.06)}
+.partner.selected{outline:2px solid #9bb9e5}
+.partnerhead{display:flex;justify-content:space-between;gap:10px}
+.partner h3{margin:0;font-size:16px}
+.statusline{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.progress{height:8px;border-radius:999px;background:var(--gray2);overflow:hidden;margin:11px 0 6px}
+.progress span{display:block;height:100%;background:linear-gradient(90deg,#6a94d6,#3f7d54)}
+.pmeta{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.pmeta div{background:var(--bg);border-radius:8px;padding:7px;font-size:12px}
+.pmeta b{display:block;color:var(--muted);font-size:10px;margin-bottom:2px}
+.detailTop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+.detailTop h2{margin:0;font-size:22px}
+.detailActions{display:flex;gap:7px;flex-wrap:wrap}
+.summary{display:grid;grid-template-columns:1.05fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
+.box h3{font-size:13px;margin:0 0 8px;color:var(--muted)}
+.big{font-size:18px;font-weight:700}
+.inline{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.field{display:grid;gap:4px}
+.field label{font-size:11px;color:var(--muted);font-weight:700}
+input[type="date"],input[type="time"],input[type="text"],input[type="email"],input[type="number"],select,textarea{
+  border:1px solid var(--line);border-radius:8px;padding:7px;background:#fff;color:var(--text);min-width:0
+}
+textarea{width:100%;min-height:120px;resize:vertical}
+.contacts{display:grid;gap:5px}
+.contactline{display:flex;align-items:center;gap:7px;font-size:12px;flex-wrap:wrap}
+.currentBox{border-left:4px solid var(--blue)}
+.currentText{font-size:15px;font-weight:700;line-height:1.35}
+.processHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:16px 0 8px}
+.processHead h2{margin:0}
+.process{display:grid;gap:7px}
+.processrow{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 10px;border:1px solid var(--line);border-radius:9px;min-width:0}
+.stepnum{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:var(--gray2);flex:0 0 auto}
+.stepnum.done{background:var(--green2);color:var(--green)}
+.stepnum.omit{background:var(--gray2);color:#747c87}
+.stepTitle{font-size:13px;font-weight:600}
+.stepHint{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.35}
+.stepQuick{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:12px;color:var(--muted)}
+.stepQuick input{width:18px;height:18px;margin:0;accent-color:var(--green)}
+.stepMeta{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.detailTag{font-size:10px;padding:2px 6px;border-radius:999px;background:var(--gray2);color:#5f6772}
+.detailTag.yellow{background:var(--yellow2);color:var(--yellow)}
+.detailTag.blue{background:var(--blue2);color:var(--blue)}
+.processrow.auto{background:#fbfcfe}
+.stepDetailGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stepDetailGrid .full{grid-column:1/-1}
+.stepStatusLine{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:end;padding:10px;background:var(--bg);border-radius:10px;margin-bottom:12px}
+.doneCheck{display:flex;align-items:center;gap:8px;font-weight:700;min-height:38px}
+.doneCheck input{width:20px;height:20px;accent-color:var(--green)}
+.omitCheck{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);min-height:38px}
+.omitCheck input{width:18px;height:18px;margin:0}
+.fileActions{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px}
+.markdownNote{min-height:150px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.45}
+details{margin-top:12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+summary{cursor:pointer;font-weight:700;font-size:14px}
+.doneList{display:grid;gap:5px;margin-top:8px}
+.doneItem{display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:center;padding:7px 8px;background:#fafbfc;border-radius:8px}
+.taskrow{display:grid;grid-template-columns:1.4fr .7fr .8fr .8fr auto;gap:7px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.taskrow:last-child{border-bottom:0}
+.history{border-left:2px solid var(--line);padding-left:12px;margin-top:8px}
+.history div{font-size:12px;margin-bottom:8px}
+.notearea{width:100%;min-height:90px}
+.footer{margin-top:22px;text-align:center;color:var(--muted);font-size:11px}
+.modalback{position:fixed;inset:0;background:rgba(18,25,38,.35);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
+.modalback.show{display:flex}
+.modal{background:#fff;border-radius:16px;border:1px solid var(--line);box-shadow:0 20px 70px rgba(0,0,0,.18);width:min(820px,100%);max-height:90vh;overflow:auto;padding:18px}
+.modal h2{margin:0 0 12px}
+.modalgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modalfooter{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.notice{font-size:11px;color:var(--muted);background:var(--bg);padding:8px;border-radius:8px;margin-top:8px}
+.empty{color:var(--muted);font-size:13px;padding:8px 0}
+.templateOption{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px;border-bottom:1px solid var(--line)}
+.templateOption:last-child{border-bottom:0}
+.recipient{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:7px;border-bottom:1px solid var(--line)}
+.recipient:last-child{border-bottom:0}
+.pmPartner{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px}
+.pmPartnerHead{display:flex;gap:8px;align-items:center}
+.pmContact{display:grid;grid-template-columns:1.1fr 1.1fr 1.2fr 1fr auto auto;gap:6px;margin-top:6px;align-items:center}
+.contactSection{margin-top:18px;padding-top:15px;border-top:1px solid var(--line)}
+.contactSection:first-of-type{margin-top:0;padding-top:0;border-top:0}
+.contactSectionHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}
+.contactSectionHead h3{margin:0;font-size:17px}
+.contactSectionHint{font-size:12px;color:var(--muted);margin-top:2px}
+.contactModal{width:min(1040px,100%);padding:20px 22px}
+.contactModal>h2{font-size:24px;margin-bottom:5px}
+.contactIntro{font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.45}
+.contactCard{border:1px solid var(--line);border-radius:11px;background:#fff}
+.externalContactCard{padding:12px;margin-top:9px}
+.contactCardHead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px}
+.contactCardHead b{font-size:14px}
+.contactGrid{display:grid;grid-template-columns:88px minmax(190px,1.25fr) minmax(180px,1.15fr) minmax(190px,1.1fr);gap:9px 10px}
+.contactGrid .wide{grid-column:span 2}
+.contactModal .field label{font-size:12px;color:#596375;font-weight:700}
+.contactModal input[type="text"],.contactModal input[type="email"],.contactModal select{font-size:14px;padding:8px 9px;min-height:38px}
+.contactModal .btn.small{font-size:12px;padding:7px 10px}
+.contactModal .removePersonCard{padding:5px 8px;color:var(--muted)}
+
+.internalContactHeader,.internalContactRow{
+ display:grid;
+ grid-template-columns:76px minmax(190px,1.45fr) minmax(205px,1.25fr) minmax(190px,1.15fr) 34px;
+ gap:8px;
+ align-items:end;
+}
+.internalContactHeader{padding:0 9px 5px;color:var(--muted);font-size:12px;font-weight:700}
+.internalContactHeader span:last-child{text-align:center}
+.internalContactRow{padding:8px 9px;margin-top:6px;border-radius:9px}
+.internalContactRow .field{gap:0}
+.internalContactRow .field label{display:none}
+.internalContactRow .removePersonCard{width:34px;height:38px;padding:0;font-size:18px;line-height:1;align-self:end}
+.internalContactRow input,.internalContactRow select{width:100%}
+.internalContactRow .titleField input{padding-left:7px;padding-right:7px}
+.contactEmpty{font-size:12px;color:var(--muted);padding:8px 2px}
+.contactTransfer{margin-top:18px;border:1px solid var(--line);border-radius:10px;padding:0 11px;background:#fbfcfe}
+.contactTransfer>summary{cursor:pointer;padding:10px 0;font-size:13px;font-weight:700}
+.contactTransferBody{padding:2px 0 11px}
+
+.participantBox{border:1px solid var(--line);border-radius:11px;padding:10px;background:#fff}
+.participantHead{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:7px}
+.participantChips{display:flex;gap:6px;flex-wrap:wrap;min-height:28px;margin-bottom:8px}
+.participantChip{display:inline-flex;align-items:center;gap:6px;background:var(--gray2);border-radius:999px;padding:5px 8px;font-size:12px}
+.participantChip button{border:0;background:none;padding:0;color:var(--muted);font-size:16px;line-height:1}
+.participantPicker{display:none;border-top:1px solid var(--line);margin-top:8px;padding-top:8px}
+.participantPicker.open{display:block}
+.personSearch{width:100%;margin-bottom:6px}
+.personOption{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px;border-radius:8px;cursor:pointer}
+.personOption:hover{background:var(--bg)}
+.personOptionName{font-size:12px;font-weight:700}
+.personOptionMeta{font-size:11px;color:var(--muted);margin-top:2px}
+.freePerson{border-top:1px dashed var(--line);margin-top:6px;padding-top:8px}
+.freePersonRow{display:flex;gap:6px}
+.freePersonRow input{flex:1}
+.docPreview{padding:9px;background:var(--bg);border-radius:9px;font-size:12px;line-height:1.45}
+.docPreview b{display:inline-block;min-width:82px;color:var(--muted)}
+.subchecks{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px;background:var(--blue2);border-radius:10px}
+.meetingWorkspace{display:grid;gap:10px}
+.workspaceBlock{border:1px solid var(--line);border-radius:11px;padding:10px;background:#fff}
+.workspaceBlock h3{font-size:13px;margin:0 0 7px}
+.subtaskList{display:grid;gap:7px}
+.subtask{display:flex;align-items:flex-start;gap:8px;font-size:12px;padding:7px 8px;background:var(--bg);border-radius:8px}
+.subtask input{width:18px;height:18px;margin:0;flex:0 0 auto}
+.subtask small{display:block;color:var(--muted);margin-top:2px}
+.protocolDetails{margin-top:0}
+.protocolActions{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.markdownPreview{border:1px solid var(--line);border-radius:9px;padding:10px;background:#fbfcfe;font-size:12px;line-height:1.5;min-height:50px}
+.markdownPreview h3,.markdownPreview h4,.markdownPreview h5{margin:8px 0 5px}
+.markdownPreview ul{margin:5px 0 5px 20px;padding:0}
+.markdownPreview p{margin:5px 0}
+.markdownPreview code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--gray2);padding:1px 4px;border-radius:4px}
+
+@media(max-width:1050px){
+ .twocol,.partnergrid,.summary{grid-template-columns:1fr}
+ .kpis{grid-template-columns:repeat(2,1fr)}
+ .processrow{grid-template-columns:28px minmax(0,1fr) auto;align-items:center}
+ .processrow .stepQuick{grid-column:2}
+ .processrow .stepDetailsBtn{grid-column:3;grid-row:1 / span 2}
+ .stepDetailGrid,.stepStatusLine{grid-template-columns:1fr}
+ .stepDetailGrid .full,.contactGrid .wide{grid-column:auto}
+ .taskrow,.pmContact,.contactGrid,.subchecks{grid-template-columns:1fr}
+ .roundbar{align-items:flex-start;flex-direction:column}
+ .contactModal{width:100%;padding:17px}
+ .contactGrid{grid-template-columns:80px minmax(0,1fr)}
+ .contactGrid .wide{grid-column:1 / -1}
+ .externalContactCard .contactGrid>.field:nth-child(3),.externalContactCard .contactGrid>.field:nth-child(4){grid-column:1 / -1}
+ .internalContactHeader{display:none}
+ .internalContactRow{grid-template-columns:76px minmax(0,1fr) 34px;grid-template-areas:"title name remove" "category category category" "email email email";align-items:end;padding:10px}
+ .internalContactRow .field label{display:block;margin-bottom:4px}
+ .internalContactRow .titleField{grid-area:title}
+ .internalContactRow .nameField{grid-area:name}
+ .internalContactRow .categoryField{grid-area:category}
+ .internalContactRow .emailField{grid-area:email}
+ .internalContactRow .removePersonCard{grid-area:remove}
+ .contactSectionHead{align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Kooperationsverträge</h1>
+      <div class="sub">Version 1.4.2 · browserlokaler Arbeitsstand · portable JSON-Checkpoints</div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="partnerMasterBtn">Partnerstamm</button>
+      <button class="btn" id="internalContactsBtn">Interne Arbeitskontakte</button>
+      <button class="btn" id="newRoundBtn">Neue Jahresrunde</button>
+      <button class="btn" id="importBtn">JSON-Checkpoint laden</button>
+      <button class="btn" id="exportBtn">JSON exportieren</button>
+      <input id="importFile" type="file" accept=".json,.bak,application/json" hidden>
+    </div>
+  </div>
+
+  <div class="roundbar">
+    <div class="roundleft">
+      <span class="muted">Jahresrunde</span>
+      <select id="roundSelect"></select>
+    </div>
+    <div class="roundstats" id="roundStats"></div>
+  </div>
+
+  <div class="exportReminder" id="exportReminder"></div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="twocol">
+    <div class="panel">
+      <h2>Akut / Handlungsbedarf</h2>
+      <div id="urgentList" class="list"></div>
+    </div>
+    <div class="panel">
+      <h2>Was steht als Nächstes an?</h2>
+      <div id="agenda"></div>
+    </div>
+  </div>
+
+  <div class="sectionTitle">Kooperationspartner</div>
+  <div id="partnerGrid" class="partnergrid"></div>
+
+  <div class="sectionTitle">Arbeitsbereich</div>
+  <div class="panel" id="detail"></div>
+
+  <div class="footer">
+    Fortschritt = nur Vertragsmeilensteine. Jeder Schritt hat eine optionale Detailansicht; BBB, E-Mail, .ics, Markdown und Wiedervorlagen zählen nicht als eigener Fortschritt.<br>
+    Der aktuelle Arbeitsstand wird automatisch browserlokal persistiert. JSON-Dateien sind bewusst erzeugte portable Checkpoints – nicht automatisch der aktuellste Stand.
+  </div>
+</div>
+
+<div class="modalback" id="modalBack">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+const APP_VERSION = "1.4.2";
+const STORAGE_KEY = "vertragsdashboard_v1";
+const LOCAL_META_KEY = "vertragsdashboard_v1_exportmeta";
+
+const INTERNAL_CONTACT_CATEGORIES = [
+ "Sachgebietsleitung",
+ "stellv. Sachgebietsleitung",
+ "Teamleitung",
+ "Teammitarbeiter",
+ "Jurist",
+ "Sonstige"
+];
+const EXTERNAL_CONTACT_CATEGORIES = [
+ "Projektkoordination",
+ "Koordinationsstelle",
+ "Sonstige"
+];
+
+const STANDARD_STEPS = [
+ {id:"s1",  title:"Einladung / Terminanfrage für Kooperationstreffen verschickt", owner:"intern", auto:"invitation"},
+ {id:"s2",  title:"Termin für Kooperationstreffen vereinbart", owner:"intern / extern", auto:"meeting"},
+ {id:"s3",  title:"Projektplan eingegangen", owner:"Kooperationspartner", auto:"project1"},
+ {id:"s4",  title:"Interner Austausch erfolgt", owner:"intern"},
+ {id:"s5",  title:"Kooperationsgespräch durchgeführt", owner:"intern / extern"},
+ {id:"s6",  title:"Aktualisierter Projektplan eingegangen", owner:"Kooperationspartner", auto:"project2"},
+ {id:"s7",  title:"Vertragsunterlagen erstellt", owner:"intern"},
+ {id:"s8",  title:"Vertragsfassung und Stellungnahme an den Juristen übermittelt", owner:"intern → Jurist"},
+ {id:"s9",  title:"Rückmeldung / überarbeitete Fassung des Juristen eingegangen", owner:"Jurist"},
+ {id:"s10", title:"Juristisch geprüfte Fassung an Kooperationspartner übermittelt", owner:"intern → Kooperationspartner"},
+ {id:"s11", title:"Rückmeldung Kooperationspartner eingegangen", owner:"Kooperationspartner"},
+ {id:"s12", title:"Finale Fassung hergestellt", owner:"intern"},
+ {id:"s13", title:"Unterschrift Präsidium LA", owner:"Präsidium LA"},
+ {id:"s14", title:"Unterschrift Kooperationspartner", owner:"Kooperationspartner"},
+ {id:"s15", title:"Unterzeichnete Endfassung vollständig abgelegt", owner:"intern"}
+];
+
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function nowIso(){ return new Date().toISOString(); }
+function todayIso(){ return new Date().toISOString().slice(0,10); }
+function esc(s=""){ return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m])); }
+function fmtDate(s){
+ if(!s) return "—";
+ const [y,m,d]=s.slice(0,10).split("-");
+ return `${d}.${m}.${y}`;
+}
+function fmtDateTime(s){
+ if(!s) return "noch nie";
+ const d=new Date(s);
+ return d.toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"});
+}
+function addHistory(record,date,text){
+ record.history=record.history||[];
+ if(!date) date=todayIso();
+ if(!record.history.some(h=>h.date===date && h.text===text)) record.history.push({date,text});
+}
+function makeStepState(){
+ return {status:"open",revisit:"",doneDate:"",sentDate:"",statementSignedReturned:false,internalPeople:"",externalPeople:"",internalParticipants:[],externalParticipants:[],note:"",agendaMarkdown:"",protocolMarkdown:"",protocolCreated:false,protocolSent:false,nextcloudFiled:false,docLabel:"",docRef:"",docRaw:"",docName:"",docPath:"",fileName:"",filePath:"",templates:[]};
+}
+function makeSteps(){ return Object.fromEntries(STANDARD_STEPS.map(s=>[s.id,makeStepState()])); }
+function makeRecord(){
+ return {
+   meeting:{invitationSentDate:"",date:"",time:"10:00",duration:60,confirmed:false,confirmedAt:"",bbb:"",bbbSent:false,history:[]},
+   projectPlan:{firstReceivedDate:"",updatedReceivedDate:"",deadlineOverride:""},
+   version:{label:"",date:""},
+   statement:{createdDate:""},
+   note:"",
+   steps:makeSteps(),
+   extraTasks:[],
+   history:[]
+ };
+}
+const DEFAULT_STATE = {
+ appVersion:APP_VERSION,
+ currentYear:2027,
+ peopleMaster:[],
+ updatedAt:nowIso(),
+ exportedAt:"",
+ partnerMaster:[
+  {id:"UNI-GIESSEN",name:"Uni Gießen",shortName:"Uni Gießen",active:true,contacts:[]},
+  {id:"UNI-FRANKFURT",name:"Uni Frankfurt",shortName:"Uni Frankfurt",active:true,contacts:[]},
+  {id:"UNI-KASSEL",name:"Uni Kassel",shortName:"Uni Kassel",active:true,contacts:[]},
+  {id:"UNI-MARBURG",name:"Uni Marburg",shortName:"Uni Marburg",active:true,contacts:[]},
+  {id:"UNI-DARMSTADT",name:"Uni Darmstadt",shortName:"Uni Darmstadt",active:true,contacts:[]},
+  {id:"MAH",name:"MAH",shortName:"MAH",active:true,contacts:[]},
+  {id:"DFF",name:"DFF",shortName:"DFF",active:true,contacts:[]}
+ ],
+ rounds:[]
+};
+function makeRound(year,partnerIds){ return {year,partnerRecords:Object.fromEntries(partnerIds.map(id=>[id,makeRecord()]))}; }
+DEFAULT_STATE.rounds.push(makeRound(2027,DEFAULT_STATE.partnerMaster.map(p=>p.id)));
+
+function clone(x){ return JSON.parse(JSON.stringify(x)); }
+let state = loadState();
+migrateState();
+let selectedPartnerId = Object.keys(currentRound().partnerRecords)[0] || null;
+
+function loadState(){
+ try{
+   const raw=localStorage.getItem(STORAGE_KEY);
+   return raw ? JSON.parse(raw) : clone(DEFAULT_STATE);
+ }catch(e){ return clone(DEFAULT_STATE); }
+}
+function migrateState(){
+ const fromVersion=String(state.appVersion??"");
+ const needsLinearRemap=["1.0","2","3"].includes(fromVersion);
+ state.updatedAt=state.updatedAt||state.lastChangeAt||nowIso();
+ state.exportedAt=state.exportedAt||"";
+ delete state.lastBackupAt;
+ delete state.lastChangeAt;
+ state.partnerMaster=state.partnerMaster||[];
+ state.partnerMaster.forEach(p=>{
+   p.active=p.active!==false;
+   if(!Array.isArray(p.contacts)){
+     const contacts=[];
+     if(p.contactGreeting||p.email){
+       contacts.push({id:uid(),name:p.contactGreeting||"Ansprechperson",greeting:p.contactGreeting||"",email:p.email||"",role:"Vertragskontakt",isDefault:true});
+     }
+     p.contacts=contacts;
+   }
+   p.contacts.forEach((c,i)=>{
+     c.id=c.id||uid();
+     c.form=c.form||"sie";
+     c.isDefault=!!c.isDefault || (i===0&&!p.contacts.some(x=>x.isDefault));
+   });
+ });
+ // v1.2: operative Arbeitskontakte werden dashboardübergreifend in einem eigenen Personenstamm geführt.
+ // Bestehende Ansprechpartner werden einmalig übernommen; reine Vertragsvertretungen können später getrennt bleiben.
+ if(!Array.isArray(state.peopleMaster)){
+   state.peopleMaster=[];
+   state.partnerMaster.forEach(p=>{
+     (p.contacts||[]).forEach(c=>state.peopleMaster.push({
+       id:c.id||uid(),scope:"external",partnerId:p.id,title:c.title||"",name:c.name||"",
+       category:"Sonstige",function:c.function||c.role||"",email:c.email||"",greeting:c.greeting||"",form:c.form||"sie",
+       isDefault:!!c.isDefault,active:c.active!==false,lastUsedAt:""
+     }));
+   });
+ }
+ state.peopleMaster.forEach(person=>{
+   person.id=person.id||uid();
+   person.scope=person.scope==="internal"?"internal":"external";
+   person.partnerId=person.scope==="external"?(person.partnerId||""):"";
+   person.title=person.title||"";
+   person.name=person.name||"";
+   person.function=person.function||person.role||"";
+   if(!person.category){
+     const f=(person.function||"").toLowerCase();
+     if(person.scope==="internal"){
+       if(f.includes("stell")&&f.includes("sachgebiet")) person.category="stellv. Sachgebietsleitung";
+       else if(f.includes("sachgebiet")) person.category="Sachgebietsleitung";
+       else if(f.includes("teamleit")) person.category="Teamleitung";
+       else if(f.includes("jur")) person.category="Jurist";
+       else if(f.includes("team")) person.category="Teammitarbeiter";
+       else person.category="Sonstige";
+     }else{
+       if(f.includes("projektkoord")) person.category="Projektkoordination";
+       else if(f.includes("koordinationsstelle")||f.includes("koordinations")) person.category="Koordinationsstelle";
+       else person.category="Sonstige";
+     }
+   }
+   person.email=person.email||"";
+   person.greeting=person.greeting||"";
+   person.form=person.form||"sie";
+   person.isDefault=!!person.isDefault;
+   person.active=person.active!==false;
+   person.lastUsedAt=person.lastUsedAt||"";
+ });
+ state.rounds=(state.rounds||[]).map(round=>{
+   Object.keys(round.partnerRecords||{}).forEach(id=>{
+     const old=round.partnerRecords[id], fresh=makeRecord();
+     old.meeting={...fresh.meeting,...(old.meeting||{})};
+     old.meeting.history=old.meeting.history||[];
+     old.meeting.confirmedAt=old.meeting.confirmedAt||"";
+     if(typeof old.meeting.confirmed!=="boolean") old.meeting.confirmed=!!old.meeting.date;
+     old.projectPlan={...fresh.projectPlan,...(old.projectPlan||{})};
+     if(old.projectPlan.receivedDate && !old.projectPlan.firstReceivedDate) old.projectPlan.firstReceivedDate=old.projectPlan.receivedDate;
+     if(typeof old.versionLabel==="string") old.version={label:old.versionLabel,date:""};
+     old.version={...fresh.version,...(old.version||{})};
+     old.statement={...fresh.statement,...(old.statement||{})};
+     old.steps=old.steps||{};
+
+     // v1.0 hatte die juristische Prüfung und die Partnerprüfung parallel angeordnet.
+     // Beim ersten Öffnen ab v1.1 werden vorhandene Stati verlustfrei auf die neue lineare Reihenfolge umgelegt.
+     if(needsLinearRemap){
+       const prev=clone(old.steps);
+       if(prev.s9)  old.steps.s8=clone(prev.s9);   // alt: an LA-Recht -> neu Schritt 8
+       if(prev.s11) old.steps.s9=clone(prev.s11);  // alt: Rückmeldung LA-Recht -> neu Schritt 9
+       if(prev.s8)  old.steps.s10=clone(prev.s8);  // alt: an Partner -> neu Schritt 10
+       if(prev.s10) old.steps.s11=clone(prev.s10); // alt: Rückmeldung Partner -> neu Schritt 11
+     }
+
+     STANDARD_STEPS.forEach(step=>{
+       old.steps[step.id]={...makeStepState(),...(old.steps[step.id]||{})};
+       // v1.1.1: bisherige Dateiname/Pfad-Felder in den allgemeineren Dokument-Verweis übernehmen.
+       if(!old.steps[step.id].docLabel && old.steps[step.id].fileName) old.steps[step.id].docLabel=old.steps[step.id].fileName;
+       if(!old.steps[step.id].docRef && old.steps[step.id].filePath) old.steps[step.id].docRef=old.steps[step.id].filePath;
+       if(!Array.isArray(old.steps[step.id].internalParticipants)) old.steps[step.id].internalParticipants=[];
+       if(!Array.isArray(old.steps[step.id].externalParticipants)) old.steps[step.id].externalParticipants=[];
+       if(old.steps[step.id].internalPeople && !old.steps[step.id].internalParticipants.length) old.steps[step.id].internalParticipants=[{kind:"free",label:old.steps[step.id].internalPeople}];
+       if(old.steps[step.id].externalPeople && !old.steps[step.id].externalParticipants.length) old.steps[step.id].externalParticipants=[{kind:"free",label:old.steps[step.id].externalPeople}];
+       if(!old.steps[step.id].docRaw) old.steps[step.id].docRaw=old.steps[step.id].docRef||old.steps[step.id].docLabel||"";
+       const parsedDoc=parseDocumentRef(old.steps[step.id].docRaw);
+       if(!old.steps[step.id].docName) old.steps[step.id].docName=old.steps[step.id].docLabel||parsedDoc.name||"";
+       if(!old.steps[step.id].docPath) old.steps[step.id].docPath=parsedDoc.path||"";
+       // v1.1.2: die Zwischenstatus „wartet“ und „später“ entfallen. Wiedervorlagen bleiben erhalten.
+       if(["waiting","later"].includes(old.steps[step.id].status)) old.steps[step.id].status="open";
+       if(!Array.isArray(old.steps[step.id].templates)) old.steps[step.id].templates=[];
+     });
+     old.extraTasks=old.extraTasks||[];
+     old.history=old.history||[];
+     old.note=old.note||"";
+   });
+   return round;
+ });
+ if(!state.rounds.length) state.rounds=[makeRound(state.currentYear||2027,state.partnerMaster.filter(p=>p.active).map(p=>p.id))];
+ if(!state.rounds.some(r=>Number(r.year)===Number(state.currentYear))) state.currentYear=state.rounds[0].year;
+ state.appVersion=APP_VERSION;
+}
+
+function loadLocalMeta(){
+ try{
+  const raw=localStorage.getItem(LOCAL_META_KEY);
+  const parsed=raw?JSON.parse(raw):{};
+  return {changesSinceExport:Number(parsed.changesSinceExport)||0,firstUnexportedChangeAt:parsed.firstUnexportedChangeAt||""};
+ }catch(e){return {changesSinceExport:0,firstUnexportedChangeAt:""};}
+}
+let localMeta=loadLocalMeta();
+function persistLocalMeta(){localStorage.setItem(LOCAL_META_KEY,JSON.stringify(localMeta));}
+function resetExportReminderMeta(){localMeta={changesSinceExport:0,firstUnexportedChangeAt:""};persistLocalMeta();}
+function saveState(touch=true){
+ if(touch){
+  const now=nowIso();
+  state.updatedAt=now;
+  localMeta.changesSinceExport=(Number(localMeta.changesSinceExport)||0)+1;
+  if(!localMeta.firstUnexportedChangeAt)localMeta.firstUnexportedChangeAt=now;
+  persistLocalMeta();
+ }
+ localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+}
+function exportStatusInfo(){
+ if(!state.exportedAt){
+  if((Number(localMeta.changesSinceExport)||0)>0)return {key:"pending",label:"Änderungen noch nicht exportiert"};
+  return {key:"unknown",label:"Exportzeitpunkt unbekannt"};
+ }
+ const changed=state.updatedAt&&new Date(state.updatedAt)>new Date(state.exportedAt);
+ return changed?{key:"pending",label:"Änderungen noch nicht exportiert"}:{key:"ok",label:"Alle Änderungen exportiert"};
+}
+function renderExportReminder(){
+ const el=document.getElementById("exportReminder");if(!el)return;
+ const status=exportStatusInfo();
+ const first=localMeta.firstUnexportedChangeAt?new Date(localMeta.firstUnexportedChangeAt).getTime():0;
+ const ageMin=first?Math.floor((Date.now()-first)/60000):0;
+ const show=status.key!=="ok" && localMeta.changesSinceExport>=5 && ageMin>=15;
+ el.classList.toggle("show",show);
+ if(show){
+  el.innerHTML=`<div class="exportReminderText"><b>${localMeta.changesSinceExport} Änderungen noch nicht als JSON-Checkpoint exportiert</b>Erste noch nicht exportierte Änderung vor etwa ${ageMin} Minuten.</div><button class="btn small" id="reminderExportBtn">Jetzt exportieren</button>`;
+  document.getElementById("reminderExportBtn").onclick=exportCheckpoint;
+ }else el.innerHTML="";
+}
+function currentRound(){ return state.rounds.find(r=>Number(r.year)===Number(state.currentYear)); }
+function partnerMaster(id){ return state.partnerMaster.find(p=>p.id===id); }
+function personDisplayName(person){ return [person?.title,person?.name].filter(Boolean).join(" ").trim() || "Unbenannte Person"; }
+function workContactsForPartner(id){
+ return (state.peopleMaster||[]).filter(x=>x.active!==false&&x.scope==="external"&&x.partnerId===id)
+   .map(x=>({...x,rawName:x.name,name:personDisplayName(x),role:[x.category,x.function].filter(Boolean).join(" · ")}));
+}
+function internalWorkContacts(){
+ return (state.peopleMaster||[]).filter(x=>x.active!==false&&x.scope==="internal");
+}
+function personById(id){ return (state.peopleMaster||[]).find(x=>x.id===id); }
+function participantLabel(entry){
+ if(!entry) return "";
+ if(entry.kind==="free") return entry.label||"";
+ const p=personById(entry.id);
+ return p?personDisplayName(p):(entry.labelSnapshot||"nicht mehr im Arbeitskontakt-Stamm");
+}
+function participantText(entries){ return (entries||[]).map(participantLabel).filter(Boolean).join(", "); }
+function bundle(id){ return {...partnerMaster(id),contacts:workContactsForPartner(id),record:currentRound().partnerRecords[id]}; }
+
+function parseDocumentRef(raw){
+ const input=(raw||"").trim();
+ if(!input) return {raw:"",name:"",path:"",kind:"empty",url:""};
+ const cleanParts=path=>{
+   const decoded=decodeURIComponent(path||"");
+   const slash=decoded.lastIndexOf("/");
+   if(slash<0) return {name:decoded,path:""};
+   return {name:decoded.slice(slash+1),path:decoded.slice(0,slash+1)};
+ };
+ try{
+   if(/^https?:\/\//i.test(input)){
+     const u=new URL(input), marker="/remote.php/dav/files/";
+     const ix=u.pathname.indexOf(marker);
+     if(ix>=0){
+       const after=u.pathname.slice(ix+marker.length);
+       const firstSlash=after.indexOf("/");
+       const relative=firstSlash>=0?after.slice(firstSlash):"/";
+       const parts=cleanParts(relative);
+       return {raw:input,name:parts.name,path:parts.path,kind:"webdav",url:input};
+     }
+     const parts=cleanParts(u.pathname);
+     return {raw:input,name:parts.name,path:parts.path,kind:"url",url:input};
+   }
+ }catch(e){}
+ const parts=cleanParts(input);
+ return {raw:input,name:parts.name,path:parts.path,kind:input.includes("/")?"path":"name",url:""};
+}
+
+function weekdayDeadline(meetingDate){
+ if(!meetingDate) return "";
+ let d=new Date(meetingDate+"T12:00:00"), count=0;
+ while(count<3){
+   d.setDate(d.getDate()-1);
+   const wd=d.getDay();
+   if(wd!==0&&wd!==6) count++;
+ }
+ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function projectDeadline(r){ return r.projectPlan.deadlineOverride || weekdayDeadline(r.meeting.date); }
+
+function syncAutoSteps(r){
+ const map={
+   s1:{done:!!r.meeting.invitationSentDate,date:r.meeting.invitationSentDate},
+   s2:{done:!!r.meeting.date && !!r.meeting.confirmed,date:r.meeting.confirmedAt||r.steps.s2?.doneDate||""},
+   s3:{done:!!r.projectPlan.firstReceivedDate,date:r.projectPlan.firstReceivedDate},
+   s6:{done:!!r.projectPlan.updatedReceivedDate,date:r.projectPlan.updatedReceivedDate}
+ };
+ Object.entries(map).forEach(([id,info])=>{
+   const st=r.steps[id];
+   if(info.done){
+     st.status="done";
+     if(info.date) st.doneDate=info.date;
+   }else if(st.status==="done"){
+     st.status="open";
+     st.doneDate="";
+   }
+ });
+}
+function stepNo(id){ return STANDARD_STEPS.findIndex(s=>s.id===id)+1; }
+function linkedCompletionDate(r,id){
+ if(id==="s1") return r.meeting.invitationSentDate||"";
+ if(id==="s2") return r.meeting.confirmedAt||r.steps.s2.doneDate||"";
+ if(id==="s3") return r.projectPlan.firstReceivedDate||"";
+ if(id==="s6") return r.projectPlan.updatedReceivedDate||"";
+ return r.steps[id]?.doneDate||"";
+}
+function setLinkedCompletionDate(r,id,date){
+ const st=r.steps[id];
+ if(id==="s1") r.meeting.invitationSentDate=date;
+ if(id==="s2") r.meeting.confirmedAt=date;
+ if(id==="s3") r.projectPlan.firstReceivedDate=date;
+ if(id==="s6") r.projectPlan.updatedReceivedDate=date;
+ st.doneDate=date;
+}
+function clearLinkedCompletion(r,id){
+ if(id==="s1") r.meeting.invitationSentDate="";
+ if(id==="s2"){r.meeting.confirmed=false;r.meeting.confirmedAt="";}
+ if(id==="s3") r.projectPlan.firstReceivedDate="";
+ if(id==="s6") r.projectPlan.updatedReceivedDate="";
+}
+function setStepDone(r,id,done,date=""){
+ const st=r.steps[id];
+ if(done){
+   if(id==="s2" && !r.meeting.date) return {ok:false,message:"Bitte zuerst den Gesprächstermin in ‚Termin / Projektdaten‘ oder in den Details dieses Schritts eintragen."};
+   const chosen=date || linkedCompletionDate(r,id) || (id==="s5"&&r.meeting.date?r.meeting.date:todayIso());
+   if(id==="s1" && !r.meeting.invitationSentDate) r.meeting.invitationSentDate=chosen;
+   if(id==="s2"){
+     r.meeting.confirmed=true;
+     r.meeting.confirmedAt=chosen;
+   }
+   if(id==="s3" && !r.projectPlan.firstReceivedDate) r.projectPlan.firstReceivedDate=chosen;
+   if(id==="s6" && !r.projectPlan.updatedReceivedDate) r.projectPlan.updatedReceivedDate=chosen;
+   if(id==="s7"){
+     if(!r.version.date) r.version.date=chosen;
+     if(!r.statement.createdDate) r.statement.createdDate=chosen;
+   }
+   st.status="done";
+   st.doneDate=chosen;
+   return {ok:true};
+ }
+ clearLinkedCompletion(r,id);
+ st.status="open";
+ st.doneDate="";
+ return {ok:true};
+}
+function stepHasDetails(st){
+ return !!((st.internalParticipants||[]).length||(st.externalParticipants||[]).length||st.internalPeople||st.externalPeople||st.note||st.agendaMarkdown||st.protocolMarkdown||st.protocolCreated||st.protocolSent||st.nextcloudFiled||st.docRaw||st.docName||st.docPath||st.docLabel||st.docRef||st.fileName||st.filePath||st.revisit||st.sentDate||st.statementSignedReturned);
+}
+function stepMetaHtml(st,stepId=""){
+ const bits=[];
+ if((st.internalParticipants||[]).length||(st.externalParticipants||[]).length||st.internalPeople||st.externalPeople) bits.push('<span class="detailTag blue">Beteiligte</span>');
+ if(st.agendaMarkdown) bits.push('<span class="detailTag blue">Tagesordnung</span>');
+ if(st.note) bits.push('<span class="detailTag">Notizen</span>');
+ if(st.protocolMarkdown||st.protocolCreated) bits.push('<span class="detailTag">Protokoll</span>');
+ if(stepId==="s5" && (st.protocolCreated||st.protocolSent||st.nextcloudFiled)){
+   const n=[!!st.protocolCreated,!!st.protocolSent,!!st.nextcloudFiled].filter(Boolean).length;
+   bits.push(`<span class="detailTag">Nachbereitung ${n}/3</span>`);
+ }
+ if(stepId==="s7" && st.nextcloudFiled) bits.push('<span class="detailTag">Nextcloud abgelegt</span>');
+ if(st.docRaw||st.docName||st.docPath||st.docLabel||st.docRef||st.fileName||st.filePath) bits.push('<span class="detailTag">Dokument</span>');
+ if(st.revisit) bits.push(`<span class="detailTag yellow">WV ${fmtDate(st.revisit)}</span>`);
+ return bits.length?`<div class="stepMeta">${bits.join("")}</div>`:"";
+}
+
+function relevantSteps(r){ return STANDARD_STEPS.filter(s=>r.steps[s.id].status!=="omit"); }
+function progress(r){
+ const rel=relevantSteps(r), done=rel.filter(s=>r.steps[s.id].status==="done").length;
+ return {done,total:rel.length,pct:rel.length?Math.round(done/rel.length*100):100};
+}
+function isClosed(r){
+ syncAutoSteps(r);
+ const coreDone=relevantSteps(r).every(s=>r.steps[s.id].status==="done");
+ const extraDone=r.extraTasks.every(t=>t.status==="done");
+ return coreDone && extraDone && r.steps.s12.status==="done" && r.steps.s13.status==="done" && r.steps.s14.status==="done" && r.steps.s15.status==="done";
+}
+function nextOpenStep(r){
+ syncAutoSteps(r);
+ return STANDARD_STEPS.find(s=>!["done","omit"].includes(r.steps[s.id].status)) || null;
+}
+function lastCompletedStep(r){
+ syncAutoSteps(r);
+ return STANDARD_STEPS.slice().reverse().find(s=>r.steps[s.id].status==="done") || null;
+}
+function openStepText(s,r){
+ if(!s) return "Keine offenen Prozesspunkte";
+ const map={
+  s1:"Einladung / Terminanfrage noch zu versenden",
+  s2:"Termin für Kooperationsgespräch noch zu vereinbaren",
+  s3:"Projektplan ausstehend",
+  s4:"Interner Austausch noch durchzuführen",
+  s5:r.meeting.date&&r.meeting.confirmed?`Kooperationsgespräch am ${fmtDate(r.meeting.date)}${r.meeting.time?`, ${r.meeting.time} Uhr`:""} – noch durchzuführen`:"Kooperationsgespräch noch durchzuführen",
+  s6:"Aktualisierter Projektplan ausstehend",
+  s7:"Vertragsfassung und Stellungnahme noch zu erstellen",
+  s8:"Vertragsfassung und Stellungnahme noch an den Juristen zu übermitteln",
+  s9:"Rückmeldung / überarbeitete Fassung des Juristen ausstehend",
+  s10:"Juristisch geprüfte Fassung noch an Kooperationspartner zu übermitteln",
+  s11:"Rückmeldung Kooperationspartner ausstehend",
+  s12:"Finale Fassung noch herzustellen",
+  s13:"Unterschrift Präsidium LA ausstehend",
+  s14:"Unterschrift Kooperationspartner ausstehend",
+  s15:"Unterzeichnete Endfassung noch vollständig abzulegen"
+ };
+ return map[s.id]||s.title;
+}
+function currentSummary(r){
+ syncAutoSteps(r);
+ if(isClosed(r)) return "Abgeschlossen";
+ const deadline=projectDeadline(r), today=todayIso();
+ if(r.meeting.confirmed && deadline && !r.projectPlan.firstReceivedDate && deadline<today) return `Projektplan überfällig (Frist ${fmtDate(deadline)})`;
+ if(r.meeting.date && !r.meeting.confirmed) return `Terminvorschlag ${fmtDate(r.meeting.date)}${r.meeting.time?`, ${r.meeting.time} Uhr`:""} – noch nicht bestätigt`;
+ return openStepText(nextOpenStep(r),r);
+}
+function openAt(r){
+ const next=nextOpenStep(r);
+ if(!next) return "—";
+ if(next.id==="s9") return "Jurist";
+ if(next.id==="s11") return "Kooperationspartner";
+ return next.owner||"—";
+}
+
+function importantHistory(p){
+ const r=p.record, out=[];
+ if(r.meeting.invitationSentDate) out.push({date:r.meeting.invitationSentDate,text:"Einladung / Terminanfrage verschickt"});
+ if(r.steps.s2.status==="done" && r.steps.s2.doneDate) out.push({date:r.steps.s2.doneDate,text:"Termin für Kooperationsgespräch vereinbart"});
+ (r.meeting.history||[]).forEach(x=>out.push({date:x.at||x.toDate,text:`Termin verschoben: ${fmtDate(x.fromDate)} → ${fmtDate(x.toDate)}`}));
+ if(r.projectPlan.firstReceivedDate) out.push({date:r.projectPlan.firstReceivedDate,text:"Projektplan eingegangen"});
+ if(r.steps.s5.status==="done") out.push({date:r.steps.s5.doneDate||r.meeting.date,text:"Kooperationsgespräch durchgeführt"});
+ if(r.projectPlan.updatedReceivedDate) out.push({date:r.projectPlan.updatedReceivedDate,text:"Aktualisierter Projektplan eingegangen"});
+ if(r.steps.s7.status==="done" && r.steps.s7.doneDate) out.push({date:r.steps.s7.doneDate,text:r.version.label?`Vertragsunterlagen (${r.version.label}) erstellt`:"Vertragsunterlagen erstellt"});
+ [["s8","Vertragsfassung und Stellungnahme an den Juristen übermittelt"],["s9","Rückmeldung / überarbeitete Fassung des Juristen eingegangen"],["s10","Juristisch geprüfte Fassung an Kooperationspartner übermittelt"],["s11","Rückmeldung Kooperationspartner eingegangen"],["s12","Finale Fassung hergestellt"],["s13","Unterschrift Präsidium LA"],["s14","Unterschrift Kooperationspartner"],["s15","Unterzeichnete Endfassung vollständig abgelegt"]].forEach(([id,text])=>{
+   if(r.steps[id].status==="done"&&r.steps[id].doneDate) out.push({date:r.steps[id].doneDate,text});
+ });
+ (r.history||[]).forEach(h=>out.push(h));
+ const key=new Set();
+ return out.filter(x=>x.date).sort((a,b)=>b.date.localeCompare(a.date)).filter(x=>{
+   const k=x.date+"|"+x.text;if(key.has(k))return false;key.add(k);return true;
+ });
+}
+
+function collectAgenda(){
+ const items=[], today=todayIso();
+ for(const [id,r] of Object.entries(currentRound().partnerRecords)){
+   const p=partnerMaster(id), d=projectDeadline(r);
+   if(r.meeting.date && r.meeting.date>=today && r.steps.s5.status!=="done")
+     items.push({date:r.meeting.date,type:r.meeting.confirmed?"Termin":"Vorschlag",cls:r.meeting.confirmed?"violet":"blue",title:`${p.shortName} – ${r.meeting.confirmed?"Kooperationsgespräch":"Terminvorschlag"}`,sub:`${r.meeting.time||""} Uhr${r.meeting.confirmed?"":" · noch nicht bestätigt"}`});
+   if(r.meeting.confirmed && d && !r.projectPlan.firstReceivedDate)
+     items.push({date:d,type:"Frist",cls:"red",title:`${p.shortName} – Projektplanfrist`,sub:r.projectPlan.deadlineOverride?"manuell gesetzt":"3 Werktage vorher"});
+   STANDARD_STEPS.forEach(s=>{
+     const st=r.steps[s.id];
+     if(st.revisit && !["done","omit"].includes(st.status))
+       items.push({date:st.revisit,type:"Wiedervorlage",cls:"yellow",title:`${p.shortName} – ${s.title}`,sub:"wieder anschauen / ggf. nachfassen"});
+   });
+   r.extraTasks.filter(t=>t.status!=="done").forEach(t=>{
+     if(t.fixedDate) items.push({date:t.fixedDate,type:"Aufgabe",cls:"blue",title:`${p.shortName} – ${t.title}`,sub:t.owner||""});
+     else if(t.revisit) items.push({date:t.revisit,type:"Wiedervorlage",cls:"yellow",title:`${p.shortName} – ${t.title}`,sub:"wieder anschauen"});
+   });
+ }
+ return items.sort((a,b)=>a.date.localeCompare(b.date));
+}
+function collectUrgent(){
+ const items=[], today=todayIso();
+ for(const [id,r] of Object.entries(currentRound().partnerRecords)){
+   const p=partnerMaster(id), d=projectDeadline(r);
+   if(r.meeting.confirmed && d && !r.projectPlan.firstReceivedDate && d<today) items.push({type:"Frist",cls:"red",line:"redline",title:`${p.shortName} – Projektplan fehlt`,sub:`Frist ${fmtDate(d)} überschritten`,partnerId:id,action:"meeting"});
+   STANDARD_STEPS.forEach(s=>{
+     const st=r.steps[s.id];
+     if(st.revisit && !["done","omit"].includes(st.status) && st.revisit<=today)
+       items.push({type:"Wiedervorlage",cls:"yellow",line:"yellowline",title:`${p.shortName} – ${s.title}`,sub:"Keine feste Frist · ggf. nachfassen",partnerId:id,stepId:s.id,action:"step"});
+   });
+   r.extraTasks.filter(t=>t.status!=="done").forEach(t=>{
+     if(t.fixedDate && t.fixedDate<=today) items.push({type:"Aufgabe",cls:"blue",line:"blueline",title:`${p.shortName} – ${t.title}`,sub:t.fixedDate<today?`fällig seit ${fmtDate(t.fixedDate)}`:"heute",partnerId:id,taskId:t.id,action:"partner"});
+     else if(t.revisit && t.revisit<=today) items.push({type:"Wiedervorlage",cls:"yellow",line:"yellowline",title:`${p.shortName} – ${t.title}`,sub:"wieder anschauen",partnerId:id,taskId:t.id,action:"partner"});
+   });
+ }
+ return items;
+}
+
+function render(){
+ const round=currentRound();
+ Object.values(round.partnerRecords).forEach(syncAutoSteps);
+ saveState(false);
+
+ document.getElementById("roundSelect").innerHTML=state.rounds.slice().sort((a,b)=>b.year-a.year).map(r=>`<option ${r.year==state.currentYear?"selected":""}>${r.year}</option>`).join("");
+ const records=Object.values(round.partnerRecords), closed=records.filter(isClosed).length;
+ const exportInfo=exportStatusInfo();
+ document.getElementById("roundStats").innerHTML=`
+  <div class="statmini"><b>Partner</b>${records.length}</div>
+  <div class="statmini"><b>Abgeschlossen</b>${closed} von ${records.length}</div>
+  <div class="statmini"><b>Letzte Änderung</b>${fmtDateTime(state.updatedAt)}</div>
+  <div class="statmini"><b>Letzter Export</b>${state.exportedAt?fmtDateTime(state.exportedAt):"unbekannt"}</div>
+  <span class="backupflag ${exportInfo.key==="ok"?"ok":exportInfo.key==="unknown"?"unknown":""}">${exportInfo.label}</span>`;
+ renderExportReminder();
+
+ const agenda=collectAgenda(), urgent=collectUrgent(), today=todayIso();
+ const overdue=agenda.filter(x=>x.type==="Frist"&&x.date<today).length;
+ const meetings=agenda.filter(x=>x.type==="Termin"&&x.date>=today).length;
+ const rev=agenda.filter(x=>x.type==="Wiedervorlage"&&x.date<=today).length;
+ document.getElementById("kpis").innerHTML=`
+  <div class="kpi red"><strong>${overdue}</strong><small>Fristen überfällig</small></div>
+  <div class="kpi"><strong>${meetings}</strong><small>kommende Gespräche</small></div>
+  <div class="kpi yellow"><strong>${rev}</strong><small>Wiedervorlagen fällig</small></div>
+  <div class="kpi green"><strong>${closed}</strong><small>Partner abgeschlossen</small></div>`;
+
+ document.getElementById("urgentList").innerHTML=urgent.length?urgent.slice(0,8).map((x,i)=>`
+  <div class="item ${x.line} urgentItem" tabindex="0" role="button" data-urgent-index="${i}"><span class="badge ${x.cls}">${x.type}</span><div><b>${esc(x.title)}</b><div class="muted">${esc(x.sub)}</div></div><span aria-hidden="true">›</span></div>`).join(""):`<div class="empty">Aktuell kein unmittelbarer Handlungsbedarf.</div>`;
+ const urgentShown=urgent.slice(0,8);
+ document.querySelectorAll(".urgentItem").forEach(el=>{
+   const activate=()=>{
+     const x=urgentShown[Number(el.dataset.urgentIndex)];
+     if(!x||!x.partnerId)return;
+     selectedPartnerId=x.partnerId;
+     render();
+     const p=bundle(x.partnerId);
+     if(x.action==="step"&&x.stepId) openStepDetail(p,x.stepId);
+     else if(x.action==="meeting") openMeetingModal(p);
+     else document.getElementById("detail").scrollIntoView({behavior:"smooth",block:"start"});
+   };
+   el.onclick=activate;
+   el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();activate();}};
+ });
+
+ const future=agenda.filter(x=>x.date>=today).slice(0,8);
+ document.getElementById("agenda").innerHTML=future.length?future.map(x=>`
+  <div class="agendaRow"><div class="agendaDate">${fmtDate(x.date).slice(0,5)}</div><div><b>${esc(x.title)}</b><div class="muted">${esc(x.sub)}</div></div><span class="badge ${x.cls}">${x.type}</span></div>`).join(""):`<div class="empty">Keine kommenden Einträge.</div>`;
+
+ document.getElementById("partnerGrid").innerHTML=Object.keys(round.partnerRecords).map(id=>{
+   const p=partnerMaster(id), r=round.partnerRecords[id], pr=progress(r), summary=currentSummary(r);
+   const flags=[];
+   if(r.meeting.date) flags.push(`<span class="badge green">Termin ✓</span>`);
+   if(r.projectPlan.firstReceivedDate) flags.push(`<span class="badge green">Projektplan ✓</span>`);
+   return `<div class="partner ${id===selectedPartnerId?"selected":""}" data-partner="${id}">
+    <div class="partnerhead"><div><h3>${esc(p.shortName||p.name)}</h3><div class="muted">${esc(summary)}</div></div><span class="badge ${isClosed(r)?"green":"blue"}">${isClosed(r)?"abgeschlossen":`${pr.done}/${pr.total}`}</span></div>
+    <div class="statusline">${flags.join("")}</div>
+    <div class="progress"><span style="width:${pr.pct}%"></span></div>
+    <div class="muted">${pr.done} von ${pr.total} relevanten Vertragsmeilensteinen erledigt</div>
+    <div class="pmeta"><div><b>Offen bei</b>${esc(openAt(r))}</div><div><b>Gespräch</b>${r.meeting.date?fmtDate(r.meeting.date):"noch offen"}</div></div>
+   </div>`;
+ }).join("");
+ document.querySelectorAll(".partner").forEach(el=>el.onclick=()=>{selectedPartnerId=el.dataset.partner;render();document.getElementById("detail").scrollIntoView({behavior:"smooth",block:"start"});});
+ renderDetail();
+}
+
+function renderDetail(){
+ const root=document.getElementById("detail");
+ if(!selectedPartnerId||!currentRound().partnerRecords[selectedPartnerId]){root.innerHTML='<div class="empty">Partner auswählen.</div>';return;}
+ const p=bundle(selectedPartnerId),r=p.record,pr=progress(r),deadline=projectDeadline(r);
+ const open=STANDARD_STEPS.filter(s=>!["done","omit"].includes(r.steps[s.id].status));
+ const done=STANDARD_STEPS.filter(s=>r.steps[s.id].status==="done");
+ const omitted=STANDARD_STEPS.filter(s=>r.steps[s.id].status==="omit");
+ const contacts=(p.contacts||[]);
+
+ root.innerHTML=`
+ <div class="detailTop">
+  <div><h2>${esc(p.name)}</h2><div class="muted">Vertragsrunde ${state.currentYear} · ${pr.done}/${pr.total} relevante Meilensteine</div></div>
+  <div class="detailActions">
+   <button class="btn small" id="deckBtn">Deck-Markdown</button>
+   <button class="btn small" id="todoBtn">To-do-Markdown</button>
+   <button class="btn small" id="emailBtn">E-Mail erstellen</button>
+   <button class="btn small" id="icsBtn" ${r.meeting.date&&r.meeting.confirmed?"":"disabled"}>Kalendereintrag (.ics)</button>
+  </div>
+ </div>
+
+ <div class="summary">
+  <div class="box currentBox">
+   <h3>Aktueller Stand</h3>
+   <div class="currentText">${esc(currentSummary(r))}</div>
+   <div class="muted" style="margin-top:6px">wird automatisch aus den vorhandenen Daten erzeugt</div>
+  </div>
+
+  <div class="box">
+   <h3>Termin & Projektplan</h3>
+   <div><b>${r.meeting.date?`${fmtDate(r.meeting.date)} · ${esc(r.meeting.time)} Uhr`:"noch kein Termin"}</b></div>
+   <div class="muted">${r.meeting.date?(r.meeting.confirmed?"Termin bestätigt":"Terminvorschlag noch nicht bestätigt"):""}${r.meeting.history.length?` · ${r.meeting.history.length}× verschoben`:""}</div>
+   <div style="margin-top:7px">${r.projectPlan.firstReceivedDate?`<span class="badge green">Projektplan eingegangen</span>`:(deadline&&r.meeting.confirmed)?`<span class="badge ${deadline<todayIso()?"red":"gray"}">Frist ${fmtDate(deadline)}</span>`:(deadline?`<span class="badge gray">bei Bestätigung: ${fmtDate(deadline)}</span>`:"")}</div>
+   <div style="margin-top:8px"><button class="btn small" id="meetingBtn">Termin / Projektdaten</button></div>
+  </div>
+
+  <div class="box">
+   <h3>Arbeitskontakte extern</h3>
+   <div class="contacts">${contacts.length?contacts.map(c=>`<div class="contactline"><b>${esc(c.name)}</b>${c.role?`<span class="muted">${esc(c.role)}</span>`:""}${c.isDefault?`<span class="badge green">Standard</span>`:""}</div>`).join(""):'<div class="muted">Noch keine externen Arbeitskontakte hinterlegt.</div>'}</div>
+   <div style="margin-top:8px"><button class="btn small" id="contactsBtn">Externe Arbeitskontakte bearbeiten</button></div>
+  </div>
+ </div>
+
+ <div class="processHead"><h2>Aktuell offen</h2><span class="muted">${open.length} Prozesspunkt(e)</span></div>
+ <div class="process">
+  ${open.length?open.map(s=>processRow(s,r)).join(""):'<div class="empty">Keine offenen Prozesspunkte.</div>'}
+ </div>
+
+ <details ${done.length<4?"open":""}>
+  <summary>Erledigt (${done.length})</summary>
+  <div class="doneList">
+   ${done.map(s=>`<div class="doneItem"><div class="stepnum done">${stepNo(s.id)}</div><div><b>${esc(s.title)}</b>${r.steps[s.id].doneDate?`<div class="muted">abgeschlossen am ${fmtDate(r.steps[s.id].doneDate)}</div>`:""}${stepMetaHtml(r.steps[s.id],s.id)}</div><div class="inline"><button class="btn small stepDetailDone" data-step="${s.id}">Details</button><button class="btn small reopen" data-step="${s.id}">wieder öffnen</button></div></div>`).join("")||'<div class="empty">Noch nichts erledigt.</div>'}
+  </div>
+ </details>
+
+ ${omitted.length?`<details><summary>Entfällt (${omitted.length})</summary><div class="doneList">${omitted.map(s=>`<div class="doneItem"><div class="stepnum omit">${stepNo(s.id)}</div><div><b>${esc(s.title)}</b>${stepMetaHtml(r.steps[s.id],s.id)}</div><div class="inline"><button class="btn small stepDetailDone" data-step="${s.id}">Details</button><button class="btn small reopen" data-step="${s.id}">wieder öffnen</button></div></div>`).join("")}</div></details>`:""}
+
+ <details>
+  <summary>Zusätzliche Aufgaben (${r.extraTasks.filter(t=>t.status!=="done").length} offen)</summary>
+  <div style="margin-top:8px">
+   ${r.extraTasks.length?r.extraTasks.map(t=>`<div class="taskrow"><b>${esc(t.title)}</b><span class="muted">${esc(t.owner||"")}</span><span class="muted">${t.fixedDate?`Frist ${fmtDate(t.fixedDate)}`:"keine Frist"}</span><span class="muted">${t.revisit?`WV ${fmtDate(t.revisit)}`:"keine WV"}</span><button class="btn small ${t.status==="done"?"":"primary"} taskToggle" data-task="${t.id}">${t.status==="done"?"wieder öffnen":"erledigen"}</button></div>`).join(""):'<div class="empty">Keine zusätzlichen Aufgaben.</div>'}
+   <div style="margin-top:8px"><button class="btn small" id="addTaskBtn">+ freie Aufgabe</button></div>
+  </div>
+ </details>
+
+ <details>
+  <summary>Freie Notiz & wichtige Ereignisse</summary>
+  <div style="margin-top:10px">
+   <div class="field"><label>Arbeitsnotiz</label><textarea id="note" class="notearea">${esc(r.note||"")}</textarea></div>
+   <div class="history">${importantHistory(p).slice(0,12).map(h=>`<div><b>${fmtDate(h.date)}</b> · ${esc(h.text)}</div>`).join("")||'<div class="empty">Noch keine wichtigen Ereignisse.</div>'}</div>
+  </div>
+ </details>`;
+
+ bindDetailEvents(p);
+}
+function processRow(s,r){
+ const st=r.steps[s.id];
+ const hint=s.id==="s8"?"Vertrag und Stellungnahme gemeinsam weitergeben":
+            s.id==="s9"?"Rückmeldung bzw. überarbeitete Fassung des Juristen":
+            s.id==="s10"?"anschließend Weitergabe an den Kooperationspartner":
+            s.id==="s11"?"Rückmeldung des Partners – dessen interner Prüfprozess wird nicht abgebildet":"";
+ return `<div class="processrow ${s.auto?"auto":""}">
+  <div class="stepnum">${stepNo(s.id)}</div>
+  <div><div class="stepTitle">${esc(s.title)}</div><div class="stepHint">${esc(s.owner)}${hint?` · ${esc(hint)}`:""}${s.auto?" · Datum kann auch aus den Projektdaten übernommen werden":""}</div>${stepMetaHtml(st,s.id)}</div>
+  <label class="stepQuick"><input class="stepDone" data-step="${s.id}" type="checkbox"> abgeschlossen</label>
+  <button class="btn small stepDetailsBtn" data-step="${s.id}">Details</button>
+ </div>`;
+}
+function bindDetailEvents(p){
+ const r=p.record;
+ document.querySelectorAll(".stepDone").forEach(el=>el.onchange=e=>{
+   const res=setStepDone(r,e.target.dataset.step,e.target.checked);
+   if(!res.ok){e.target.checked=false;alert(res.message);return;}
+   syncAutoSteps(r);saveState();render();
+ });
+ document.querySelectorAll(".stepDetailsBtn,.stepDetailDone").forEach(el=>el.onclick=()=>openStepDetail(p,el.dataset.step));
+ document.querySelectorAll(".reopen").forEach(el=>el.onclick=()=>{
+   setStepDone(r,el.dataset.step,false);saveState();render();
+ });
+ document.querySelectorAll(".taskToggle").forEach(el=>el.onclick=()=>{const t=r.extraTasks.find(x=>x.id===el.dataset.task);t.status=t.status==="done"?"open":"done";saveState();render();});
+ document.getElementById("note").onchange=e=>{r.note=e.target.value;saveState();};
+ document.getElementById("meetingBtn").onclick=()=>openMeetingModal(p);
+ document.getElementById("contactsBtn").onclick=()=>openContactsModal(p);
+ document.getElementById("addTaskBtn").onclick=()=>openTaskModal(p);
+ document.getElementById("deckBtn").onclick=()=>openTextModal("Deck-Markdown",deckMarkdown(p));
+ document.getElementById("todoBtn").onclick=()=>openTextModal("To-do-Markdown",todoMarkdown(p));
+ document.getElementById("emailBtn").onclick=()=>openEmailModal(p);
+ document.getElementById("icsBtn").onclick=()=>downloadICS(p);
+}
+const STEP_DETAIL_CONFIG = {
+ s1:{participants:["external"],labels:{external:"Empfänger extern"},revisit:true,noteLabel:"Notiz zur Terminanfrage",noteMode:"optional",context:"proposal"},
+ s2:{participants:["external"],labels:{external:"Termin vereinbart mit"},revisit:true,noteLabel:"Notiz zur Terminabstimmung",noteMode:"optional",context:"meeting"},
+ s3:{participants:["external"],labels:{external:"Eingegangen von"},revisit:true,noteLabel:"Hinweis zum Projektplan",noteMode:"optional",document:{label:"Projektplan / Ablage",placeholder:"Pfad zum Projektplan aus FE Explorer oder URL aus ForkLift"},context:"project1"},
+ s4:{participants:["internal"],labels:{internal:"Beteiligte intern"},revisit:false,noteLabel:"Ergebnis / offene Punkte (Markdown)",noteMode:"core"},
+ s5:{participants:["internal","external"],labels:{internal:"Beteiligte intern",external:"Beteiligte extern"},revisit:false,noteLabel:"Notizen / Erkenntnisse (Markdown)",noteMode:"core",document:{label:"Protokoll / Ablage",placeholder:"Pfad zum Protokoll oder Ablageordner"},context:"conversation"},
+ s6:{participants:["external"],labels:{external:"Eingegangen von"},revisit:true,noteLabel:"Hinweis zum aktualisierten Projektplan",noteMode:"optional",document:{label:"Aktualisierter Projektplan / Ablage",placeholder:"Pfad zum aktualisierten Projektplan"}},
+ s7:{participants:[],revisit:false,noteLabel:"Bearbeitungshinweise (Markdown)",noteMode:"core",document:{label:"Ablagepfad / Vertragsunterlagen",placeholder:"Pfad zur Vertragsfassung, Stellungnahme oder zum zugehörigen Ordner"},context:"contractDocs"},
+ s8:{participants:["internal"],labels:{internal:"Übermittelt an"},revisit:false,noteLabel:"Versandnotiz",noteMode:"optional",referenceFrom:"s7"},
+ s9:{participants:["internal"],labels:{internal:"Rückmeldung von"},revisit:true,noteLabel:"Juristische Hinweise / Ergebnis (Markdown)",noteMode:"core",document:{label:"Überarbeitete Fassung / juristische Rückmeldung",placeholder:"Pfad zur überarbeiteten Fassung oder Rückmeldung"},context:"legalReturn"},
+ s10:{participants:["external"],labels:{external:"Übermittelt an"},revisit:false,noteLabel:"Versandnotiz",noteMode:"optional",referenceFrom:"s9"},
+ s11:{participants:["external"],labels:{external:"Rückmeldung von"},revisit:true,noteLabel:"Rückmeldung / Änderungswünsche (Markdown)",noteMode:"core",document:{label:"Kommentierte Datei / Rückmeldung (optional)",placeholder:"Nur falls eine Datei zurückkommt"}},
+ s12:{participants:[],revisit:false,noteLabel:"Bearbeitungshinweise (Markdown)",noteMode:"core",document:{label:"Finale Vertragsfassung",placeholder:"Pfad zur finalen Vertragsfassung"}},
+ s13:{participants:[],revisit:true,noteLabel:"Notiz zur Zeichnung",noteMode:"optional",context:"laSignature"},
+ s14:{participants:["external"],labels:{external:"Abwicklung über"},revisit:true,noteLabel:"Notiz zur Unterschrift",noteMode:"optional",context:"partnerSignature"},
+ s15:{participants:[],revisit:false,noteLabel:"Archivhinweis",noteMode:"optional",document:{label:"Unterzeichnete Endfassung / Ablage",placeholder:"Pfad zur vollständig unterzeichneten Endfassung"}}
+};
+function stepDetailConfig(stepId){ return STEP_DETAIL_CONFIG[stepId]||{participants:[],revisit:false,noteLabel:"Notiz",noteMode:"optional"}; }
+function preferredCategories(stepId,kind){
+ const map={
+  s1:{external:["Projektkoordination","Koordinationsstelle"]},
+  s2:{external:["Projektkoordination","Koordinationsstelle"]},
+  s3:{external:["Projektkoordination","Koordinationsstelle"]},
+  s4:{internal:["Teammitarbeiter","Teamleitung","Sachgebietsleitung","stellv. Sachgebietsleitung"]},
+  s5:{internal:["Teammitarbeiter","Teamleitung","Sachgebietsleitung","stellv. Sachgebietsleitung"],external:["Projektkoordination","Koordinationsstelle"]},
+  s6:{external:["Projektkoordination","Koordinationsstelle"]},
+  s8:{internal:["Jurist"]},
+  s9:{internal:["Jurist"]},
+  s10:{external:["Projektkoordination","Koordinationsstelle"]},
+  s11:{external:["Projektkoordination","Koordinationsstelle"]},
+  s14:{external:["Projektkoordination","Koordinationsstelle"]}
+ };
+ return map[stepId]?.[kind]||[];
+}
+function participantPickerHtml(kind,label){
+ const cap=kind==="internal"?"Intern":"Extern";
+ return `<div class="participantBox">
+   <div class="participantHead"><div><b>${esc(label)}</b><div class="muted">Mehrfachauswahl oder Freitext</div></div><button type="button" class="btn small" id="add${cap}Participant">+ Person hinzufügen</button></div>
+   <div class="participantChips" id="${kind}ParticipantChips"></div>
+   <div class="participantPicker" id="${kind}ParticipantPicker">
+    <input class="search" id="${kind}PersonSearch" type="search" placeholder="Person suchen …">
+    <div class="personOptions" id="${kind}PersonOptions"></div>
+    <div class="freePersonBox"><label>Andere Person / Freitext</label><div class="inline"><input id="${kind}FreePerson" type="text" placeholder="Name oder kurze Angabe"><button class="btn small" type="button" id="add${cap}Free">Übernehmen</button></div>
+      <label class="muted" style="display:flex;align-items:center;gap:6px;margin-top:6px"><input id="${kind}TakeToMaster" type="checkbox"> in den Arbeitskontakt-Stamm übernehmen</label>
+    </div>
+   </div>
+  </div>`;
+}
+function simpleMarkdownHtml(markdown){
+ const lines=String(markdown||"").split(/\r?\n/),out=[];let inList=false;
+ const inline=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/`([^`]+)`/g,"<code>$1</code>");
+ const closeList=()=>{if(inList){out.push("</ul>");inList=false;}};
+ for(const raw of lines){
+  const line=raw.trimEnd();
+  if(!line.trim()){closeList();continue;}
+  let m;
+  if((m=line.match(/^###\s+(.+)/))){closeList();out.push(`<h5>${inline(m[1])}</h5>`);continue;}
+  if((m=line.match(/^##\s+(.+)/))){closeList();out.push(`<h4>${inline(m[1])}</h4>`);continue;}
+  if((m=line.match(/^#\s+(.+)/))){closeList();out.push(`<h3>${inline(m[1])}</h3>`);continue;}
+  if((m=line.match(/^[-*]\s+(.*)/))){if(!inList){out.push("<ul>");inList=true;}out.push(`<li>${inline(m[1])}</li>`);continue;}
+  closeList();out.push(`<p>${inline(line)}</p>`);
+ }
+ closeList();return out.join("")||'<span class="muted">Noch kein Protokolltext.</span>';
+}
+function stepContextFields(s,r,st){
+ const id=s.id;
+ if(id==="s1") return `<div class="full detailMiniBlock"><h3>Terminanfrage</h3><div class="stepDetailGrid">
+   <div class="field"><label>Terminvorschlag (optional)</label><input id="sdMeetingDate" type="date" value="${r.meeting.date||""}"></div>
+   <div class="field"><label>Uhrzeit</label><input id="sdMeetingTime" type="time" value="${r.meeting.time||"10:00"}"></div>
+   <div class="field full"><label>BBB-Link (optional)</label><input id="sdBbb" type="text" value="${esc(r.meeting.bbb||"")}"></div>
+   <label class="full muted" style="display:flex;align-items:center;gap:7px"><input id="sdBbbSent" type="checkbox" ${r.meeting.bbbSent?"checked":""}> BBB-Link mit der Anfrage versandt</label>
+  </div></div>`;
+ if(id==="s2") return `<div class="full detailMiniBlock"><h3>Termin</h3><div class="stepDetailGrid">
+   <div class="field"><label>Gesprächstermin</label><input id="sdMeetingDate" type="date" value="${r.meeting.date||""}"></div>
+   <div class="field"><label>Uhrzeit</label><input id="sdMeetingTime" type="time" value="${r.meeting.time||"10:00"}"></div>
+   <div class="field"><label>Dauer (Minuten)</label><input id="sdMeetingDur" type="number" min="15" step="15" value="${r.meeting.duration||60}"></div>
+   <div class="field"><label>BBB-Link</label><input id="sdBbb" type="text" value="${esc(r.meeting.bbb||"")}"></div>
+   <label class="full muted" style="display:flex;align-items:center;gap:7px"><input id="sdBbbSent" type="checkbox" ${r.meeting.bbbSent?"checked":""}> BBB-Link wurde übermittelt</label>
+  </div></div>`;
+ if(id==="s3"){
+   const d=projectDeadline(r);
+   return `<div class="full notice" style="margin:0">${d?`Projektplanfrist: <b>${fmtDate(d)}</b>${r.projectPlan.deadlineOverride?" (manuell gesetzt)":""}`:"Noch kein Gesprächstermin hinterlegt; daher kann keine Projektplanfrist berechnet werden."}</div>`;
+ }
+ if(id==="s5") return `<div class="full detailMiniBlock"><h3>BBB-Raum</h3><div class="readOnlyLine"><div class="value">${r.meeting.bbb?esc(r.meeting.bbb):'<span class="muted">Kein BBB-Link hinterlegt.</span>'}</div>${r.meeting.bbb?`<div class="contextActions"><button class="btn small" type="button" id="copyStepBbb">Link kopieren</button><button class="btn small" type="button" id="openStepBbb">BBB öffnen</button></div>`:""}</div></div>`;
+ if(id==="s7") return `<div class="full subchecks">
+   <div class="field"><label>Vertragsfassung erstellt am</label><input id="sdContractCreated" type="date" value="${r.version.date||""}"></div>
+   <div class="field"><label>Stellungnahme erstellt am</label><input id="sdStatementCreated" type="date" value="${r.statement?.createdDate||""}"></div>
+   <div class="field"><label>Versionsbezeichnung Vertrag (optional)</label><input id="sdVersion" type="text" value="${esc(r.version.label||"")}" placeholder="z. B. v1.2"></div>
+   <div class="notice" style="margin:0">Schritt 7 umfasst Vertragsfassung und Stellungnahme. Bei Nutzung des schnellen „abgeschlossen“-Hakens werden fehlende Datumsangaben mit dem Abschlussdatum ergänzt.</div>
+  </div>`;
+ if(id==="s9") return `<div class="full detailMiniBlock"><label class="subtask"><input id="sdStatementSignedReturned" type="checkbox" ${st.statementSignedReturned?"checked":""}><span>Gezeichnete Stellungnahme zurück<small>Nur markieren, wenn die gezeichnete Stellungnahme tatsächlich mit der Rückmeldung zurückgekommen ist.</small></span></label></div>`;
+ if(id==="s13") return `<div class="field"><label>Zur Zeichnung gegeben am</label><input id="sdSentDate" type="date" value="${st.sentDate||""}"></div>`;
+ if(id==="s14") return `<div class="field"><label>Zur Unterschrift versandt am</label><input id="sdSentDate" type="date" value="${st.sentDate||""}"></div>`;
+ return "";
+}
+function documentReferenceHtml(r,sourceStepId){
+ const src=r.steps[sourceStepId], raw=src?.docRaw||src?.docRef||src?.docLabel||"";
+ if(!raw) return `<div class="full notice" style="margin:0">Zu diesem Versand ist noch kein Dokumentbezug im vorherigen Schritt hinterlegt.</div>`;
+ const parsed=parseDocumentRef(raw);
+ return `<div class="full detailMiniBlock"><h3>Verwendete Unterlagen aus Schritt ${stepNo(sourceStepId)}</h3><div><b>${esc(parsed.name||"Dokument / Ablage")}</b></div><div class="muted" style="overflow-wrap:anywhere">${esc(parsed.path||parsed.raw)}</div><div class="contextActions"><button class="btn small" type="button" id="copyReferencedDoc">Pfad / Link kopieren</button></div></div>`;
+}
+function documentInputHtml(cfg,initialRaw){
+ if(!cfg.document) return "";
+ return `<div class="field full"><label>${esc(cfg.document.label)} (optional)</label><input id="sdDocRaw" type="text" value="${esc(initialRaw)}" placeholder="${esc(cfg.document.placeholder||"Pfad aus FE Explorer oder URL aus ForkLift einfügen")}"></div>
+  <div class="full docPreview" id="sdDocPreview"></div>
+  <div class="full fileActions"><button class="btn small" type="button" id="copyDocRaw" ${initialRaw?"":"disabled"}>Original kopieren</button></div>`;
+}
+function noteInputHtml(cfg,st){
+ const label=cfg.noteLabel||"Notiz";
+ const area=`<div class="field full"><label>${esc(label)}</label><textarea id="sdNote" class="markdownNote" placeholder="${cfg.noteMode==="core"?"- …":"optional"}">${esc(st.note||"")}</textarea></div>`;
+ if(cfg.noteMode==="core") return area;
+ return `<div class="full"><details class="optionalDetails" ${st.note?"open":""}><summary>+ ${esc(label)}</summary>${area}</details></div>`;
+}
+function openStepDetail(p,stepId){
+ const r=p.record,s=STANDARD_STEPS.find(x=>x.id===stepId),st=r.steps[stepId],cfg=stepDetailConfig(stepId);
+ const done=st.status==="done", omitted=st.status==="omit";
+ const draft={internal:clone(st.internalParticipants||[]),external:clone(st.externalParticipants||[])};
+ const pendingPeople=[];
+ const initialRaw=st.docRaw||st.docRef||st.docLabel||"";
+ const legacyHiddenDoc=!cfg.document&&initialRaw;
+ const doneDateValue=done?linkedCompletionDate(r,stepId):"";
+ openModal(`<h2>Schritt ${stepNo(stepId)} – ${esc(s.title)}</h2>
+ <div class="stepStatusLine">
+  <label class="doneCheck"><input id="sdDone" type="checkbox" ${done?"checked":""}> abgeschlossen</label>
+  <div class="field"><label>Abgeschlossen am</label><input id="sdDoneDate" type="date" value="${doneDateValue}" ${(!done||omitted)?'disabled':''}></div>
+  <label class="omitCheck"><input id="sdOmit" type="checkbox" ${omitted?"checked":""} ${done?'disabled':''}> Schritt entfällt</label>
+ </div>
+ <div class="stepDetailGrid">
+  ${stepContextFields(s,r,st)}
+  ${stepId==="s5"?`<div class="field full"><label>Tagesordnung / Gesprächspunkte (Markdown)</label><textarea id="sdAgenda" class="markdownNote" placeholder="### Tagesordnung\n- Punkt 1\n- Punkt 2">${esc(st.agendaMarkdown||"")}</textarea></div>`:""}
+  ${(cfg.participants||[]).includes("internal")?participantPickerHtml("internal",cfg.labels?.internal||"Beteiligte intern"):""}
+  ${(cfg.participants||[]).includes("external")?participantPickerHtml("external",cfg.labels?.external||"Beteiligte extern"):""}
+  ${cfg.revisit?`<div class="field"><label>Wiedervorlage (optional)</label><input id="sdRevisit" type="date" value="${st.revisit||""}"></div><div></div>`:""}
+  ${stepId==="s5"?`<div class="full workspaceBlock"><h3>Nachbereitung des Gesprächs</h3><div class="subtaskList">
+    <label class="subtask"><input id="sdProtocolCreated" type="checkbox" ${(st.protocolCreated||String(st.protocolMarkdown||"").trim())?"checked":""}><span>Protokoll erstellt<small>Wird automatisch markiert, sobald unten Protokolltext vorhanden ist; kann aber auch manuell gesetzt werden.</small></span></label>
+    <label class="subtask"><input id="sdProtocolSent" type="checkbox" ${st.protocolSent?"checked":""}><span>Protokoll versendet</span></label>
+   </div></div>`:""}
+  ${cfg.referenceFrom?documentReferenceHtml(r,cfg.referenceFrom):""}
+  ${documentInputHtml(cfg,initialRaw)}
+  ${stepId==="s5"?`<div class="full workspaceBlock"><label class="subtask"><input id="sdNextcloudFiled" type="checkbox" ${st.nextcloudFiled?"checked":""}><span>Protokoll auf Nextcloud abgelegt<small>Bleibt bewusst eine manuelle Bestätigung; ein eingetragener Pfad allein hakt die Aufgabe nicht automatisch ab.</small></span></label></div>`:""}
+  ${stepId==="s7"?`<div class="full workspaceBlock"><label class="subtask"><input id="sdContractFiled" type="checkbox" ${st.nextcloudFiled?"checked":""}><span>Vertragsunterlagen auf Nextcloud abgelegt<small>Arbeitsfassung bzw. zugehörige Vertragsunterlagen. Die unterzeichnete Endfassung wird erst in Schritt 15 abschließend abgelegt.</small></span></label></div>`:""}
+  ${noteInputHtml(cfg,st)}
+  ${stepId==="s5"?`<div class="full"><details class="protocolDetails" ${st.protocolMarkdown?"open":""}><summary>Protokoll ${st.protocolMarkdown?"· vorhanden":"· optional"}</summary><div style="margin-top:10px"><div class="field"><label>Protokoll in Markdown</label><textarea id="sdProtocol" class="markdownNote" placeholder="### Ergebnisse\n- …">${esc(st.protocolMarkdown||"")}</textarea></div><div class="protocolActions"><button class="btn small" type="button" id="previewProtocol">Vorschau aktualisieren</button><button class="btn small" type="button" id="copyProtocol">Markdown kopieren</button></div><div class="markdownPreview" id="protocolPreview">${simpleMarkdownHtml(st.protocolMarkdown||"")}</div></div></details></div>`:""}
+  ${legacyHiddenDoc?`<div class="full"><details class="optionalDetails"><summary>Vorhandener Dokumentverweis aus einer älteren Version</summary><div class="muted" style="padding-bottom:10px;overflow-wrap:anywhere">${esc(initialRaw)}</div></details></div>`:""}
+ </div>
+ <div class="notice">Die Detailansicht zeigt nur Angaben, die für diesen Prozessschritt typischerweise nützlich sind. Weitere Informationen können bei Bedarf über Freitext oder die optionale Notiz ergänzt werden.</div>
+ <div class="modalfooter"><button class="btn" onclick="closeModal()">Abbrechen</button><button class="btn primary" id="saveStepDetail">Übernehmen</button></div>`);
+
+ const doneEl=document.getElementById("sdDone"),omitEl=document.getElementById("sdOmit"),doneDateEl=document.getElementById("sdDoneDate");
+ function syncDetailState(){
+   omitEl.disabled=doneEl.checked;
+   doneEl.disabled=omitEl.checked;
+   doneDateEl.disabled=!doneEl.checked||omitEl.checked;
+   if(doneEl.checked&&!doneDateEl.value) doneDateEl.value=linkedCompletionDate(r,stepId)||(stepId==="s5"&&r.meeting.date?r.meeting.date:todayIso());
+ }
+ doneEl.onchange=syncDetailState;omitEl.onchange=syncDetailState;syncDetailState();
+
+ function availablePeople(kind){
+   const list=kind==="internal"?internalWorkContacts():(state.peopleMaster||[]).filter(x=>x.active!==false&&x.scope==="external"&&x.partnerId===p.id);
+   const prefs=preferredCategories(stepId,kind);
+   return list.slice().sort((a,b)=>{
+     const ai=prefs.indexOf(a.category),bi=prefs.indexOf(b.category),ar=ai<0?999:ai,br=bi<0?999:bi;
+     return ar-br || (b.lastUsedAt||"").localeCompare(a.lastUsedAt||"") || personDisplayName(a).localeCompare(personDisplayName(b),"de");
+   });
+ }
+ function renderParticipants(kind,query=""){
+   if(!(cfg.participants||[]).includes(kind)) return;
+   const selected=draft[kind],q=(query||"").trim().toLowerCase();
+   document.getElementById(`${kind}ParticipantChips`).innerHTML=selected.length?selected.map((entry,i)=>`<span class="participantChip">${esc(participantLabel(entry))}${entry.kind==="free"?` <span class="muted">(Freitext)</span>`:""}<button type="button" data-remove-participant="${kind}:${i}" aria-label="Entfernen">×</button></span>`).join(""):'<span class="muted">Noch niemand ausgewählt.</span>';
+   const chosen=new Set(selected.filter(x=>x.kind==="person").map(x=>x.id));
+   const candidates=availablePeople(kind).filter(person=>!chosen.has(person.id)&&(!q||`${personDisplayName(person)} ${person.category||""} ${person.function||""} ${person.email||""}`.toLowerCase().includes(q)));
+   document.getElementById(`${kind}PersonOptions`).innerHTML=candidates.length?candidates.map(person=>{
+     const meta=[person.category,kind==="external"?person.function:"",person.email].filter(Boolean).join(" · ");
+     return `<div class="personOption" data-pick-person="${kind}:${person.id}"><div><div class="personOptionName">${esc(personDisplayName(person))}</div><div class="personOptionMeta">${esc(meta)}</div></div>${person.lastUsedAt?'<span class="badge gray">zuletzt verwendet</span>':""}</div>`;
+   }).join(""):'<div class="empty">Keine passenden Arbeitskontakte.</div>';
+   document.querySelectorAll(`[data-remove-participant^="${kind}:"]`).forEach(btn=>btn.onclick=()=>{const i=Number(btn.dataset.removeParticipant.split(":")[1]);draft[kind].splice(i,1);renderParticipants(kind,document.getElementById(`${kind}PersonSearch`).value);});
+   document.querySelectorAll(`[data-pick-person^="${kind}:"]`).forEach(el=>el.onclick=()=>{const id=el.dataset.pickPerson.split(":")[1],person=personById(id);if(person){draft[kind].push({kind:"person",id,labelSnapshot:personDisplayName(person)});renderParticipants(kind,document.getElementById(`${kind}PersonSearch`).value);}});
+ }
+ for(const kind of (cfg.participants||[])){
+   const cap=kind==="internal"?"Intern":"Extern";
+   renderParticipants(kind);
+   document.getElementById(`add${cap}Participant`).onclick=()=>document.getElementById(`${kind}ParticipantPicker`).classList.toggle("open");
+   document.getElementById(`${kind}PersonSearch`).oninput=e=>renderParticipants(kind,e.target.value);
+   document.getElementById(`add${cap}Free`).onclick=()=>{
+     const input=document.getElementById(`${kind}FreePerson`),label=input.value.trim();if(!label)return;
+     if(document.getElementById(`${kind}TakeToMaster`).checked){
+       const person={id:uid(),scope:kind,partnerId:kind==="external"?p.id:"",title:"",name:label,category:"Sonstige",function:"",email:"",greeting:"",form:"sie",isDefault:false,active:true,lastUsedAt:nowIso()};
+       pendingPeople.push(person);draft[kind].push({kind:"person",id:person.id,labelSnapshot:personDisplayName(person)});
+     }else draft[kind].push({kind:"free",label});
+     input.value="";document.getElementById(`${kind}TakeToMaster`).checked=false;renderParticipants(kind,document.getElementById(`${kind}PersonSearch`).value);
+   };
+ }
+
+ if(cfg.document){
+   function renderDocPreview(){
+     const parsed=parseDocumentRef(document.getElementById("sdDocRaw").value);
+     const kindLabel={webdav:"Nextcloud-WebDAV-URL",url:"Weblink",path:"Pfad",name:"Dateiname",empty:"—"}[parsed.kind]||parsed.kind;
+     document.getElementById("sdDocPreview").innerHTML=parsed.raw?`<div><b>Erkannt:</b> ${esc(kindLabel)}</div><div><b>Dateiname:</b> ${esc(parsed.name||"—")}</div><div><b>Ablagepfad:</b> ${esc(parsed.path||"—")}</div>`:'<span class="muted">Noch kein Dokumentpfad eingetragen.</span>';
+     document.getElementById("copyDocRaw").disabled=!parsed.raw;
+   }
+   document.getElementById("sdDocRaw").oninput=renderDocPreview;renderDocPreview();
+   document.getElementById("copyDocRaw").onclick=()=>copyText(document.getElementById("sdDocRaw").value);
+ }
+ if(cfg.referenceFrom && document.getElementById("copyReferencedDoc")){
+   document.getElementById("copyReferencedDoc").onclick=()=>copyText(r.steps[cfg.referenceFrom].docRaw||r.steps[cfg.referenceFrom].docRef||r.steps[cfg.referenceFrom].docLabel||"");
+ }
+ if(stepId==="s5"){
+   if(document.getElementById("copyStepBbb")) document.getElementById("copyStepBbb").onclick=()=>copyText(r.meeting.bbb||"");
+   if(document.getElementById("openStepBbb")) document.getElementById("openStepBbb").onclick=()=>window.open(r.meeting.bbb,"_blank","noopener");
+   const protocolEl=document.getElementById("sdProtocol"),createdEl=document.getElementById("sdProtocolCreated");
+   protocolEl.oninput=()=>{if(protocolEl.value.trim())createdEl.checked=true;};
+   document.getElementById("previewProtocol").onclick=()=>{document.getElementById("protocolPreview").innerHTML=simpleMarkdownHtml(protocolEl.value);};
+   document.getElementById("copyProtocol").onclick=()=>copyText(protocolEl.value);
+ }
+
+ document.getElementById("saveStepDetail").onclick=()=>{
+   const wantDone=doneEl.checked,doneDate=document.getElementById("sdDoneDate").value;
+   if(stepId==="s1"||stepId==="s2"){
+     const nd=document.getElementById("sdMeetingDate").value,nt=document.getElementById("sdMeetingTime").value,oldDate=r.meeting.date,oldTime=r.meeting.time;
+     if(stepId==="s2"&&oldDate&&(oldDate!==nd||oldTime!==nt)) r.meeting.history.push({fromDate:oldDate,fromTime:oldTime,toDate:nd,toTime:nt,at:todayIso()});
+     r.meeting.date=nd;r.meeting.time=nt;
+     if(stepId==="s2") r.meeting.duration=Number(document.getElementById("sdMeetingDur").value)||60;
+     r.meeting.bbb=document.getElementById("sdBbb").value.trim();
+     r.meeting.bbbSent=document.getElementById("sdBbbSent").checked;
+   }
+   if(stepId==="s7"){
+     r.version.label=document.getElementById("sdVersion").value.trim();
+     r.version.date=document.getElementById("sdContractCreated").value;
+     r.statement.createdDate=document.getElementById("sdStatementCreated").value;
+   }
+   if(stepId==="s9") st.statementSignedReturned=document.getElementById("sdStatementSignedReturned").checked;
+   if(stepId==="s13"||stepId==="s14") st.sentDate=document.getElementById("sdSentDate").value;
+   if(wantDone){
+     const res=setStepDone(r,stepId,true,doneDate||"");if(!res.ok){alert(res.message);return;}
+     const chosen=doneDate||r.steps[stepId].doneDate||todayIso();
+     if(doneDate) setLinkedCompletionDate(r,stepId,doneDate);
+     if(stepId==="s7"){
+       if(!r.version.date) r.version.date=chosen;
+       if(!r.statement.createdDate) r.statement.createdDate=chosen;
+     }
+   }else if(omitEl.checked){clearLinkedCompletion(r,stepId);st.status="omit";st.doneDate="";}
+   else{clearLinkedCompletion(r,stepId);st.status="open";st.doneDate="";}
+   for(const kind of (cfg.participants||[])){
+     st[`${kind}Participants`]=draft[kind];
+     st[kind==="internal"?"internalPeople":"externalPeople"]="";
+   }
+   const selectedPersonIds=new Set([...draft.internal,...draft.external].filter(x=>x.kind==="person").map(x=>x.id));
+   pendingPeople.filter(person=>selectedPersonIds.has(person.id)).forEach(person=>state.peopleMaster.push(person));
+   selectedPersonIds.forEach(id=>{const person=personById(id);if(person)person.lastUsedAt=nowIso();});
+   if(cfg.revisit) st.revisit=document.getElementById("sdRevisit").value;
+   if(stepId==="s5"){
+     st.agendaMarkdown=document.getElementById("sdAgenda").value;
+     st.protocolMarkdown=document.getElementById("sdProtocol").value;
+     st.protocolCreated=document.getElementById("sdProtocolCreated").checked || !!st.protocolMarkdown.trim();
+     st.protocolSent=document.getElementById("sdProtocolSent").checked;
+     st.nextcloudFiled=document.getElementById("sdNextcloudFiled").checked;
+   }
+   if(stepId==="s7") st.nextcloudFiled=document.getElementById("sdContractFiled").checked;
+   if(cfg.document){
+     const parsed=parseDocumentRef(document.getElementById("sdDocRaw").value);
+     st.docRaw=parsed.raw;st.docName=parsed.name;st.docPath=parsed.path;st.docLabel=parsed.name;st.docRef=parsed.raw;st.fileName="";st.filePath="";
+   }
+   const noteEl=document.getElementById("sdNote");if(noteEl) st.note=noteEl.value;
+   syncAutoSteps(r);saveState();closeModal();render();
+ };
+}
+
+function deckMarkdown(p){
+ const r=p.record,pr=progress(r),hist=importantHistory(p).slice(0,8),contacts=p.contacts||[];
+ const open=STANDARD_STEPS.filter(s=>!["done","omit"].includes(r.steps[s.id].status));
+ const done=STANDARD_STEPS.filter(s=>r.steps[s.id].status==="done");
+ const d=projectDeadline(r),lastDone=lastCompletedStep(r),nextOpen=nextOpenStep(r);
+ const lastDoneDate=lastDone?linkedCompletionDate(r,lastDone.id):"";
+ return `## Kooperationsvertrag ${p.name} – ${state.currentYear}
+
+### Ansprechpartner
+${contacts.length?contacts.map(c=>`- ${c.name}${c.role?` (${c.role})`:""}${c.email?` – ${c.email}`:""}${c.isDefault?" **[Standard]**":""}`).join("\n"):"- noch nicht hinterlegt"}
+
+### Aktueller Stand
+${lastDone?`Letzter erledigter Schritt: **${lastDone.title}**${lastDoneDate?` – ${fmtDate(lastDoneDate)}`:""}`:"Letzter erledigter Schritt: **noch keiner**"}
+${nextOpen?`Als Nächstes / offen: **${openStepText(nextOpen,r)}**`:`Als Nächstes / offen: **keine offenen Prozesspunkte**`}
+${r.version.label?`Aktuelle Fassung: **${r.version.label}**${r.version.date?` vom ${fmtDate(r.version.date)}`:""}\n`:""}${r.meeting.date?`Kooperationsgespräch: **${fmtDate(r.meeting.date)}, ${r.meeting.time} Uhr**\n`:""}${d&&r.meeting.confirmed?`Projektplanfrist: **${fmtDate(d)}**${r.projectPlan.deadlineOverride?" (manuell gesetzt)":""}\n`:""}${r.projectPlan.firstReceivedDate?`Projektplan eingegangen: ${fmtDate(r.projectPlan.firstReceivedDate)}\n`:""}${r.projectPlan.updatedReceivedDate?`Aktualisierter Projektplan eingegangen: ${fmtDate(r.projectPlan.updatedReceivedDate)}\n`:""}
+
+### Offen
+${open.length?open.map(s=>`- [ ] ${s.title}${r.steps[s.id].revisit?` _(Wiedervorlage ${fmtDate(r.steps[s.id].revisit)})_`:""}`).join("\n"):"- [x] Keine offenen Prozesspunkte"}
+
+### Erledigt
+${done.length?done.map(s=>`- [x] ${s.title}`).join("\n"):"- noch keine"}
+
+### Historie
+${hist.length?hist.map(h=>`- **${fmtDate(h.date)}:** ${h.text}`).join("\n"):"- noch keine"}
+
+---
+Stand der Dashboard-Ausgabe: ${fmtDate(todayIso())}`;
+}
+function todoMarkdown(p){
+ const r=p.record, lines=[];
+ STANDARD_STEPS.forEach(s=>{const st=r.steps[s.id];if(!["done","omit"].includes(st.status))lines.push(`- [ ] ${s.title}${st.revisit?` _(Wiedervorlage ${fmtDate(st.revisit)})_`:""}`);});
+ const s5=r.steps.s5;
+ if(s5.status==="done"||s5.protocolCreated||s5.protocolSent||s5.nextcloudFiled||s5.protocolMarkdown){
+   if(!s5.protocolCreated)lines.push("- [ ] Protokoll zum Kooperationsgespräch erstellen");
+   if(!s5.protocolSent)lines.push("- [ ] Protokoll zum Kooperationsgespräch versenden");
+   if(!s5.nextcloudFiled)lines.push("- [ ] Protokoll zum Kooperationsgespräch auf Nextcloud ablegen");
+ }
+ const s7=r.steps.s7;
+ if((s7.status==="done"||r.version.date||r.statement.createdDate||s7.nextcloudFiled) && !s7.nextcloudFiled){
+   lines.push("- [ ] Vertragsunterlagen auf Nextcloud ablegen");
+ }
+ r.extraTasks.filter(t=>t.status!=="done").forEach(t=>lines.push(`- [ ] ${t.title}${t.fixedDate?` _(Frist ${fmtDate(t.fixedDate)})_`:t.revisit?` _(Wiedervorlage ${fmtDate(t.revisit)})_`:""}`));
+ return `## To-do – ${p.name} – ${state.currentYear}\n\n${lines.join("\n")||"- [x] Keine offenen Punkte"}`;
+}
+
+function openModal(html){const m=document.getElementById("modal");m.className="modal";m.innerHTML=html;document.getElementById("modalBack").classList.add("show");}
+function closeModal(){document.getElementById("modalBack").classList.remove("show");}
+document.getElementById("modalBack").onclick=e=>{if(e.target.id==="modalBack")closeModal();};
+function copyText(text){
+ if(navigator.clipboard?.writeText) navigator.clipboard.writeText(text);
+ else{const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();}
+}
+function openTextModal(title,text){
+ openModal(`<h2>${esc(title)}</h2><textarea id="modalText">${esc(text)}</textarea><div class="modalfooter"><button class="btn" onclick="closeModal()">Schließen</button><button class="btn primary" id="copyModal">Kopieren</button></div>`);
+ document.getElementById("copyModal").onclick=()=>copyText(document.getElementById("modalText").value);
+}
+
+function openMeetingModal(p){
+ const r=p.record, oldDate=r.meeting.date,oldTime=r.meeting.time,oldConfirmed=r.meeting.confirmed;
+ openModal(`<h2>Termin & Projektdaten – ${esc(p.shortName)}</h2>
+ <div class="modalgrid">
+  <div class="field"><label>Einladung / Terminanfrage verschickt am</label><input id="mInvite" type="date" value="${r.meeting.invitationSentDate||""}"></div>
+  <div></div>
+  <div class="field"><label>Vorgeschlagener / vereinbarter Gesprächstermin</label><input id="mDate" type="date" value="${r.meeting.date||""}"></div>
+  <div class="field"><label>Uhrzeit</label><input id="mTime" type="time" value="${r.meeting.time||"10:00"}"></div>
+  <div class="field"><label>Dauer (Minuten)</label><input id="mDur" type="number" min="15" step="15" value="${r.meeting.duration||60}"></div>
+  <div class="field"><label>BBB-Link</label><input id="mBbb" type="text" value="${esc(r.meeting.bbb||"")}"></div>
+  <div class="field"><label>Projektplan eingegangen am</label><input id="mP1" type="date" value="${r.projectPlan.firstReceivedDate||""}"></div>
+  <div class="field"><label>Aktualisierter Projektplan eingegangen am</label><input id="mP2" type="date" value="${r.projectPlan.updatedReceivedDate||""}"></div>
+  <div class="field"><label>Projektplanfrist überschreiben (optional)</label><input id="mDeadlineOverride" type="date" value="${r.projectPlan.deadlineOverride||""}"></div>
+  <div class="field"><label>Aktuelle Vertragsfassung</label><input id="mVersion" type="text" value="${esc(r.version.label||"")}" placeholder="z. B. v1.3"></div>
+  <div class="field"><label>Fassung vom</label><input id="mVersionDate" type="date" value="${r.version.date||""}"></div>
+ </div>
+ <label style="display:block;margin-top:10px"><input id="mConfirmed" type="checkbox" ${r.meeting.confirmed?"checked":""}> Gesprächstermin ist bestätigt</label>
+ <label style="display:block;margin-top:8px"><input id="mSent" type="checkbox" ${r.meeting.bbbSent?"checked":""}> BBB-Link wurde versandt <span class="muted">(Hilfsfunktion, zählt nicht zum Fortschritt)</span></label>
+ <div class="notice">Projektplanfrist = 3 Werktage Montag–Freitag vor dem Gesprächstermin. Sie kann bei Bedarf manuell überschrieben werden. Ein bloß vorgeschlagener Termin zählt noch nicht als „Termin vereinbart“. Eine Versionsangabe allein schließt Schritt 7 nicht mehr automatisch ab; dort werden Vertragsfassung und Stellungnahme gemeinsam dokumentiert.</div>
+ <div class="modalfooter"><button class="btn" onclick="closeModal()">Abbrechen</button><button class="btn primary" id="saveMeeting">Übernehmen</button></div>`);
+ document.getElementById("saveMeeting").onclick=()=>{
+   const nd=document.getElementById("mDate").value,nt=document.getElementById("mTime").value;
+   if(oldDate&&(oldDate!==nd||oldTime!==nt)) r.meeting.history.push({fromDate:oldDate,fromTime:oldTime,toDate:nd,toTime:nt,at:todayIso()});
+   r.meeting.invitationSentDate=document.getElementById("mInvite").value;
+   r.meeting.date=nd;r.meeting.time=nt;r.meeting.duration=Number(document.getElementById("mDur").value)||60;
+   r.meeting.confirmed=document.getElementById("mConfirmed").checked && !!nd;
+   if(r.meeting.confirmed&&!oldConfirmed&&!r.meeting.confirmedAt) r.meeting.confirmedAt=todayIso();
+   if(!r.meeting.confirmed) r.meeting.confirmedAt="";
+   r.meeting.bbb=document.getElementById("mBbb").value.trim();r.meeting.bbbSent=document.getElementById("mSent").checked;
+   r.projectPlan.firstReceivedDate=document.getElementById("mP1").value;
+   r.projectPlan.updatedReceivedDate=document.getElementById("mP2").value;
+   r.projectPlan.deadlineOverride=document.getElementById("mDeadlineOverride").value;
+   r.version.label=document.getElementById("mVersion").value.trim();
+   r.version.date=document.getElementById("mVersionDate").value;
+   syncAutoSteps(r);saveState();closeModal();render();
+ };
+}
+
+function categoryOptions(scope,current){
+ const values=scope==="internal"?INTERNAL_CONTACT_CATEGORIES:EXTERNAL_CONTACT_CATEGORIES;
+ const selected=current||"Sonstige";
+ return values.map(v=>`<option value="${esc(v)}" ${v===selected?"selected":""}>${esc(v)}</option>`).join("");
+}
+function contactCardHtml(person,scope){
+ const external=scope==="external", category=person.category||"Sonstige";
+ if(!external){
+  return `<div class="contactCard internalContactRow" data-person-id="${person.id||uid()}" data-scope="internal">
+   <div class="field titleField"><label>Titel</label><input data-title type="text" value="${esc(person.title||"")}" placeholder="Dr."></div>
+   <div class="field nameField"><label>Name</label><input data-name type="text" value="${esc(person.name||"")}" placeholder="Name"></div>
+   <div class="field categoryField"><label>Kategorie</label><select data-category>${categoryOptions("internal",category)}</select></div>
+   <div class="field emailField"><label>E-Mail (optional)</label><input data-email type="email" value="${esc(person.email||"")}" placeholder="optional"></div>
+   <button type="button" class="btn small removePersonCard" title="Kontakt entfernen" aria-label="Kontakt entfernen">×</button>
+  </div>`;
+ }
+ return `<div class="contactCard externalContactCard" data-person-id="${person.id||uid()}" data-scope="external">
+  <div class="contactCardHead"><b>${esc(personDisplayName(person)||"Externer Arbeitskontakt")}</b><button type="button" class="btn small removePersonCard">Entfernen</button></div>
+  <div class="contactGrid">
+   <div class="field"><label>Titel</label><input data-title type="text" value="${esc(person.title||"")}" placeholder="Dr."></div>
+   <div class="field"><label>Name</label><input data-name type="text" value="${esc(person.name||"")}" placeholder="Name"></div>
+   <div class="field"><label>Kategorie</label><select data-category>${categoryOptions("external",category)}</select></div>
+   <div class="field"><label>E-Mail (optional)</label><input data-email type="email" value="${esc(person.email||"")}" placeholder="optional"></div>
+   <div class="field wide"><label>Funktion / Bezeichnung (optional)</label><input data-function type="text" value="${esc(person.function||"")}" placeholder="z. B. Mitarbeiterin der Koordinationsstelle"></div>
+   <div class="field wide"><label>Briefanrede (optional)</label><input data-greeting type="text" value="${esc(person.greeting||"")}" placeholder="z. B. Liebe Frau Müller"></div>
+   <div class="field"><label>Anredeform</label><select data-form><option value="sie" ${(person.form||"sie")==="sie"?"selected":""}>Sie/Ihr</option><option value="ihr" ${person.form==="ihr"?"selected":""}>ihr/euch</option></select></div>
+   <label class="muted" style="display:flex;align-items:center;gap:6px;align-self:end;min-height:38px"><input data-default type="checkbox" ${person.isDefault?"checked":""}> Standardkontakt</label>
+  </div>
+ </div>`;
+}
+function readContactCards(scope,partnerId=""){
+ return [...document.querySelectorAll(`.contactCard[data-scope="${scope}"]`)].map(card=>({
+   id:card.dataset.personId||uid(),scope,partnerId:scope==="external"?partnerId:"",
+   title:card.querySelector("[data-title]").value.trim(),
+   name:card.querySelector("[data-name]").value.trim(),
+   category:card.querySelector("[data-category]").value,
+   function:scope==="external"?card.querySelector("[data-function]").value.trim():"",
+   email:card.querySelector("[data-email]").value.trim(),
+   greeting:scope==="external"?card.querySelector("[data-greeting]").value.trim():"",
+   form:scope==="external"?card.querySelector("[data-form]").value:"sie",
+   isDefault:scope==="external"?card.querySelector("[data-default]").checked:false,
+   active:true,lastUsedAt:personById(card.dataset.personId)?.lastUsedAt||""
+ })).filter(x=>x.name||x.email);
+}
+function normalizeContactDefaults(ext){
+ if(ext.length&&!ext.some(x=>x.isDefault)) ext[0].isDefault=true;
+ let seen=false;ext.forEach(x=>{if(x.isDefault){if(seen)x.isDefault=false;else seen=true;}});
+ return ext;
+}
+function contactsExportPayload(){
+ return {schema:"hla-kooperation-arbeitskontakte-v2",exportedAt:nowIso(),partners:state.partnerMaster.map(x=>({id:x.id,name:x.name,shortName:x.shortName})),people:clone(state.peopleMaster||[])};
+}
+function exportWorkContacts(){
+ downloadBlob(JSON.stringify(contactsExportPayload(),null,2),`Kooperationspartner_Arbeitskontakte_${todayIso()}.json`,"application/json");
+}
+async function importWorkContactsFile(file){
+ const obj=JSON.parse(await file.text());
+ if(!["hla-kooperation-arbeitskontakte-v1","hla-kooperation-arbeitskontakte-v2"].includes(obj.schema)||!Array.isArray(obj.people))throw new Error();
+ if(!confirm("Arbeitskontakte importieren? Kontakte mit gleicher ID werden aktualisiert, neue Kontakte ergänzt."))return false;
+ const map=new Map((state.peopleMaster||[]).map(x=>[x.id,x]));
+ obj.people.forEach(x=>{
+   const scope=x.scope==="internal"?"internal":"external", f=x.function||"";
+   let category=x.category||"";
+   if(!category){
+     const low=f.toLowerCase();
+     if(scope==="internal"){
+       if(low.includes("stell")&&low.includes("sachgebiet"))category="stellv. Sachgebietsleitung";
+       else if(low.includes("sachgebiet"))category="Sachgebietsleitung";
+       else if(low.includes("teamleit"))category="Teamleitung";
+       else if(low.includes("jur"))category="Jurist";
+       else if(low.includes("team"))category="Teammitarbeiter";
+       else category="Sonstige";
+     }else{
+       if(low.includes("projektkoord"))category="Projektkoordination";
+       else if(low.includes("koordinations"))category="Koordinationsstelle";
+       else category="Sonstige";
+     }
+   }
+   const person={id:x.id||uid(),scope,partnerId:scope==="internal"?"":(x.partnerId||""),title:x.title||"",name:x.name||"",category,function:scope==="internal"?"":f,email:x.email||"",greeting:x.greeting||"",form:x.form||"sie",isDefault:!!x.isDefault,active:x.active!==false,lastUsedAt:x.lastUsedAt||""};
+   map.set(person.id,person);
+ });
+ state.peopleMaster=[...map.values()];saveState();return true;
+}
+function bindContactRemove(){
+ document.querySelectorAll(".removePersonCard").forEach(btn=>btn.onclick=()=>btn.closest(".contactCard").remove());
+}
+function openContactsModal(p){
+ const external=(state.peopleMaster||[]).filter(x=>x.scope==="external"&&x.partnerId===p.id&&x.active!==false);
+ openModal(`<h2>Externe Arbeitskontakte – ${esc(p.shortName)}</h2>
+ <div class="contactIntro">Hier werden nur die operativen externen Kontakte dieses Kooperationspartners gepflegt. Interne Kontakte sind davon getrennt und werden zentral verwaltet.</div>
+ <div class="contactSection">
+   <div class="contactSectionHead"><div><h3>${esc(p.shortName)}</h3><div class="contactSectionHint">Projektkoordination und Koordinationsstelle</div></div><button type="button" class="btn small" id="addExternalContact">+ externer Kontakt</button></div>
+   <div id="externalContactEdit">${external.length?external.map(x=>contactCardHtml(x,"external")).join(""):'<div class="contactEmpty">Noch keine externen Arbeitskontakte hinterlegt.</div>'}</div>
+ </div>
+ <div class="modalfooter"><button class="btn" onclick="closeModal()">Abbrechen</button><button class="btn primary" id="saveContacts">Übernehmen</button></div>`);
+ document.getElementById("modal").classList.add("contactModal");
+ bindContactRemove();
+ document.getElementById("addExternalContact").onclick=()=>{const box=document.getElementById("externalContactEdit");box.querySelector(".contactEmpty")?.remove();box.insertAdjacentHTML("beforeend",contactCardHtml({id:uid(),title:"",name:"",category:"Projektkoordination",function:"",email:"",greeting:"",form:"sie",isDefault:false},"external"));bindContactRemove();};
+ document.getElementById("saveContacts").onclick=()=>{
+   const ext=normalizeContactDefaults(readContactCards("external",p.id));
+   state.peopleMaster=(state.peopleMaster||[]).filter(x=>!(x.scope==="external"&&x.partnerId===p.id)).concat(ext);
+   saveState();closeModal();render();
+ };
+}
+function openInternalContactsModal(){
+ const internal=(state.peopleMaster||[]).filter(x=>x.scope==="internal"&&x.active!==false);
+ openModal(`<h2>Interne Arbeitskontakte</h2>
+ <div class="contactIntro">Diese Kontakte gelten dashboardübergreifend für alle Kooperationspartner und stehen in den Prozessschritten zur Auswahl.</div>
+ <div class="contactSection">
+   <div class="contactSectionHead"><div><h3>Interner Stamm</h3><div class="contactSectionHint">Sachgebietsleitung · Teamleitung · Teammitarbeiter · Jurist</div></div><button type="button" class="btn small" id="addInternalContact">+ interner Kontakt</button></div>
+   <div class="internalContactHeader"><span>Titel</span><span>Name</span><span>Kategorie</span><span>E-Mail</span><span></span></div>
+   <div id="internalContactEdit">${internal.length?internal.map(x=>contactCardHtml(x,"internal")).join(""):'<div class="contactEmpty">Noch keine internen Arbeitskontakte hinterlegt.</div>'}</div>
+ </div>
+ <details class="contactTransfer"><summary>Import / Export Arbeitskontakte</summary><div class="contactTransferBody"><div class="inline"><button type="button" class="btn small" id="exportPeople">Arbeitskontakte exportieren (.json)</button><button type="button" class="btn small" id="importPeople">Arbeitskontakte importieren (.json)</button><input id="peopleImportFile" type="file" accept=".json,application/json" hidden></div><div class="muted" style="margin-top:7px">Der Kontakt-Export umfasst interne und externe Arbeitskontakte. Prozessbeteiligungen werden nicht mit exportiert.</div></div></details>
+ <div class="modalfooter"><button class="btn" onclick="closeModal()">Abbrechen</button><button class="btn primary" id="saveInternalContacts">Übernehmen</button></div>`);
+ document.getElementById("modal").classList.add("contactModal");
+ bindContactRemove();
+ document.getElementById("addInternalContact").onclick=()=>{const box=document.getElementById("internalContactEdit");box.querySelector(".contactEmpty")?.remove();box.insertAdjacentHTML("beforeend",contactCardHtml({id:uid(),title:"",name:"",category:"Teammitarbeiter",function:"",email:""},"internal"));bindContactRemove();};
+ document.getElementById("saveInternalContacts").onclick=()=>{
+   const ints=readContactCards("internal");
+   state.peopleMaster=(state.peopleMaster||[]).filter(x=>x.scope!=="internal").concat(ints);
+   saveState();closeModal();render();
+ };
+ document.getElementById("exportPeople").onclick=exportWorkContacts;
+ document.getElementById("importPeople").onclick=()=>document.getElementById("peopleImportFile").click();
+ document.getElementById("peopleImportFile").onchange=async e=>{
+   const file=e.target.files[0];if(!file)return;
+   try{
+     if(await importWorkContactsFile(file)){closeModal();render();alert("Arbeitskontakte wurden importiert.");}
+   }catch(err){alert("Die Datei ist keine gültige Arbeitskontakt-Datei.");}
+ };
+}
+
+function openTaskModal(p){
+ openModal(`<h2>Freie Aufgabe – ${esc(p.shortName)}</h2>
+ <div class="field"><label>Aufgabe</label><input id="tTitle" type="text"></div>
+ <div class="modalgrid" style="margin-top:10px">
+  <div class="field"><label>Zuständig</label><select id="tOwner"><option>Ich</option><option>Partner</option><option>Jurist</option><option>intern</option><option>Mehrere</option></select></div>
+  <div class="field"><label>Feste Frist (optional)</label><input id="tFixed" type="date"></div>
+  <div class="field"><label>Wiedervorlage (optional)</label><input id="tRev" type="date"></div>
+ </div>
+ <div class="notice">Zusatzaufgaben blockieren den Abschluss, solange sie offen sind. Für nicht abschlussrelevante Hinweise besser die freie Notiz verwenden.</div>
+ <div class="modalfooter"><button class="btn" onclick="closeModal()">Abbrechen</button><button class="btn primary" id="saveTask">Aufgabe anlegen</button></div>`);
+ document.getElementById("saveTask").onclick=()=>{
+   const title=document.getElementById("tTitle").value.trim();if(!title)return;
+   p.record.extraTasks.push({id:uid(),title,owner:document.getElementById("tOwner").value,fixedDate:document.getElementById("tFixed").value,revisit:document.getElementById("tRev").value,status:"open"});
+   saveState();closeModal();render();
+ };
+}
+
+function selectedGreeting(contacts){
+ if(!contacts.length)return "Guten Tag,";
+ const gs=contacts.map(c=>(c.greeting||"").trim()).filter(Boolean);
+ if(gs.length!==contacts.length)return "Guten Tag,";
+ return gs.join(", ")+",";
+}
+function informalRecipients(contacts){ return contacts.length>0 && contacts.every(c=>(c.form||"sie")==="ihr"); }
+function weekdayName(date){
+ if(!date)return "";
+ return new Date(date+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long"});
+}
+function endTime(time,duration){
+ if(!time)return "";
+ const [h,m]=time.split(":").map(Number), total=h*60+m+(duration||60);
+ return `${String(Math.floor(total/60)%24).padStart(2,"0")}:${String(total%60).padStart(2,"0")}`;
+}
+function availableTemplates(p){
+ const r=p.record, hasContacts=(p.contacts||[]).length>0,hasMeeting=!!r.meeting.date,hasConfirmed=!!r.meeting.date&&!!r.meeting.confirmed,hasReschedule=(r.meeting.history||[]).length>0,hasVersion=!!r.version.label;
+ return [
+  {id:"proposal",label:"Kooperations- und Planungsgespräch – Terminvorschlag",ok:hasContacts&&hasMeeting,why:!hasContacts?"Arbeitskontakt fehlt":"Terminvorschlag fehlt"},
+  {id:"friendlyReminder",label:"Friendly Reminder – Kooperations- und Planungsgespräch",ok:hasContacts&&hasConfirmed,why:!hasContacts?"Arbeitskontakt fehlt":"bestätigter Termin fehlt"},
+  {id:"confirm",label:"Terminbestätigung",ok:hasContacts&&hasMeeting,why:!hasContacts?"Arbeitskontakt fehlt":"Termin fehlt"},
+  {id:"reschedule",label:"Terminverschiebung",ok:hasContacts&&hasReschedule,why:!hasContacts?"Arbeitskontakt fehlt":"keine Terminverschiebung vorhanden"},
+  {id:"contract",label:"Aktuelle Vertragsfassung übersenden",ok:hasContacts&&hasVersion,why:!hasContacts?"Arbeitskontakt fehlt":"Versionsbezeichnung fehlt"},
+  {id:"response",label:"Rückmeldung erinnern",ok:hasContacts,why:"Arbeitskontakt fehlt"}
+ ];
+}
+function emailText(template,p,recipients){
+ const r=p.record,greet=selectedGreeting(recipients),informal=informalRecipients(recipients),last=[...(r.meeting.history||[])].reverse()[0],deadline=projectDeadline(r);
+ const wd=weekdayName(r.meeting.date), end=endTime(r.meeting.time,r.meeting.duration||60);
+ const projectMissing=!r.projectPlan.firstReceivedDate;
+ const proposalBody=informal
+  ? `${greet}\n\nwir möchten die Termine für die Kooperations- und Planungsgespräche festlegen und haben für euch den ${fmtDate(r.meeting.date)} von ${r.meeting.time} bis ${end} Uhr als ersten Gesprächstermin reserviert. Passt euch der Termin?\n\nDa wir uns mitten in einer umfassenden Umstrukturierung des Sachgebiets befinden, das sich deutlich vergrößert hat, sind unsere zeitlichen Kapazitäten aktuell sehr begrenzt. Insbesondere Markus' Kalender ist derzeit sehr voll, sodass wir diesmal leider keine mehreren Terminvorschläge machen können.\n\nFalls der Termin für euch nicht passt, können wir aber gerne schauen, wann wir euch einen alternativen Termin anbieten können.\n\nWichtig ist, dass wir auch in diesem Jahr den Entwurf eures Projektplans mindestens drei Werktage vor dem Gesprächstermin erhalten, damit wir einen guten und konstruktiven Austausch über eure Projekte ermöglichen können.${r.meeting.bbb?`\n\nDas Gespräch findet in diesem BBB-Raum statt:\n${r.meeting.bbb}`:""}\n\nHerzliche Grüße`
+  : `${greet}\n\nwir möchten die Termine für die Kooperations- und Planungsgespräche festlegen und haben für Sie den ${fmtDate(r.meeting.date)} von ${r.meeting.time} bis ${end} Uhr als ersten Gesprächstermin reserviert. Passt Ihnen der Termin?\n\nDa wir uns mitten in einer umfassenden Umstrukturierung des Sachgebiets befinden, das sich deutlich vergrößert hat, sind unsere zeitlichen Kapazitäten aktuell sehr begrenzt. Insbesondere Markus' Kalender ist derzeit sehr voll, sodass wir diesmal leider keine mehreren Terminvorschläge machen können.\n\nFalls der Termin für Sie nicht passt, können wir aber gerne schauen, wann wir Ihnen einen alternativen Termin anbieten können.\n\nWichtig ist, dass wir auch in diesem Jahr den Entwurf Ihres Projektplans mindestens drei Werktage vor dem Gesprächstermin erhalten, damit wir einen guten und konstruktiven Austausch über Ihre Projekte ermöglichen können.${r.meeting.bbb?`\n\nDas Gespräch findet in diesem BBB-Raum statt:\n${r.meeting.bbb}`:""}\n\nHerzliche Grüße`;
+ const reminderProject=projectMissing
+   ? (informal?`\n\nDa wir den Entwurf eures Projektplans noch nicht erhalten haben, möchte ich gerne nachfragen, ob ihr ihn uns vorab zukommen lassen könnt.`:`\n\nDa wir den Entwurf Ihres Projektplans noch nicht erhalten haben, möchte ich gerne nachfragen, ob Sie ihn uns vorab zukommen lassen können.`)
+   : "";
+ const reminderBody=informal
+   ? `${greet}\n\nhiermit möchte ich euch an unser Treffen am ${wd}${r.meeting.date?`, den ${fmtDate(r.meeting.date)}`:""} erinnern.${reminderProject}${r.meeting.bbb?`\n\nHier noch einmal der BBB-Link:\n${r.meeting.bbb}`:""}\n\nHerzliche Grüße`
+   : `${greet}\n\nhiermit möchte ich Sie an unser Treffen am ${wd}${r.meeting.date?`, den ${fmtDate(r.meeting.date)}`:""} erinnern.${reminderProject}${r.meeting.bbb?`\n\nHier noch einmal der BBB-Link:\n${r.meeting.bbb}`:""}\n\nHerzliche Grüße`;
+ const map={
+  proposal:{subject:`Kooperations- und Planungsgespräch ${state.currentYear}`,body:proposalBody},
+  friendlyReminder:{subject:`Friendly Reminder: Kooperations- und Planungsgespräch ${state.currentYear}`,body:reminderBody},
+  confirm:{subject:`Kooperations- und Planungsgespräch ${state.currentYear} – Terminbestätigung – ${p.name}`,body:`${greet}\n\nvielen Dank für die Terminabstimmung. Unser Kooperations- und Planungsgespräch findet am ${fmtDate(r.meeting.date)} um ${r.meeting.time} Uhr statt.${r.meeting.bbb?`\n\nBBB-Link: ${r.meeting.bbb}`:""}${deadline?`\n\nDer Entwurf des Projektplans sollte bitte spätestens bis zum ${fmtDate(deadline)} vorliegen.`:""}\n\nHerzliche Grüße`},
+  reschedule:{subject:`Kooperations- und Planungsgespräch ${state.currentYear} – Terminverschiebung – ${p.name}`,body:`${greet}\n\nunser Gesprächstermin wurde von ${last?`${fmtDate(last.fromDate)} um ${last.fromTime} Uhr`:"dem bisherigen Termin"} auf den ${fmtDate(r.meeting.date)} um ${r.meeting.time} Uhr verschoben.${r.meeting.bbb?`\n\nBBB-Link: ${r.meeting.bbb}`:""}${deadline?`\n\nDie Projektplanfrist liegt damit bei ${fmtDate(deadline)}.`:""}\n\nHerzliche Grüße`},
+  contract:{subject:`Kooperationsvertrag ${state.currentYear} – aktuelle Fassung ${r.version.label} – ${p.name}`,body:`${greet}\n\nanbei übersende ich Ihnen die aktuelle Fassung des Kooperationsvertrags für ${state.currentYear} (${r.version.label}${r.version.date?` vom ${fmtDate(r.version.date)}`:""}).\n\nIch freue mich über Ihre Rückmeldung.\n\nHerzliche Grüße`},
+  response:{subject:`Kooperationsvertrag ${state.currentYear} – Rückmeldung – ${p.name}`,body:`${greet}\n\nich möchte freundlich an die noch ausstehende Rückmeldung zum Kooperationsvertrag ${state.currentYear} erinnern.\n\nVielen Dank und herzliche Grüße`}
+ };
+ return map[template];
+}
+function openEmailModal(p){
+ const templates=availableTemplates(p), contacts=p.contacts||[], def=contacts.find(c=>c.isDefault)||contacts[0];
+ openModal(`<h2>E-Mail erstellen – ${esc(p.shortName)}</h2>
+ <div class="field"><label>Vorlage</label><select id="mailTemplate">${templates.map(t=>`<option value="${t.id}" ${t.ok?"":"disabled"}>${t.label}${t.ok?"":` – ${t.why}`}</option>`).join("")}</select></div>
+ <div style="margin-top:10px"><b style="font-size:12px">Empfänger</b>${contacts.length?contacts.map(c=>`<label class="recipient"><input class="recipientCheck" type="checkbox" value="${c.id}" ${c.id===def?.id?"checked":""}><span><b>${esc(c.name)}</b><div class="muted">${esc(c.email||"")}${c.role?` · ${esc(c.role)}`:""}${c.form?` · ${c.form==="ihr"?"ihr/euch":"Sie/Ihr"}`:""}</div></span>${c.isDefault?'<span class="badge green">Standard</span>':""}</label>`).join(""):'<div class="empty">Keine Arbeitskontakte hinterlegt.</div>'}</div>
+ <div class="field" style="margin-top:10px"><label>Betreff</label><input id="mailSubject" type="text"></div>
+ <div class="field" style="margin-top:8px"><label>Text</label><textarea id="mailBody" style="min-height:300px"></textarea></div>
+ <div class="notice">Entwurf mit Betreff, Anrede und Text. Bei ausgewählten Empfängern mit gemischter Sprachform wird sicherheitshalber die formelle Variante verwendet.</div>
+ <div class="modalfooter"><button class="btn" onclick="closeModal()">Schließen</button><button class="btn primary" id="copyMail">Betreff + Text kopieren</button></div>`);
+ const sel=document.getElementById("mailTemplate");
+ if(!templates.some(t=>t.ok)){sel.disabled=true;document.getElementById("copyMail").disabled=true;return;}
+ if(sel.selectedOptions[0]?.disabled){const first=templates.find(t=>t.ok);sel.value=first.id;}
+ const refresh=()=>{
+   const ids=[...document.querySelectorAll(".recipientCheck:checked")].map(x=>x.value), rec=contacts.filter(c=>ids.includes(c.id));
+   const tx=emailText(sel.value,p,rec);document.getElementById("mailSubject").value=tx.subject;document.getElementById("mailBody").value=tx.body;
+ };
+ sel.onchange=refresh;document.querySelectorAll(".recipientCheck").forEach(x=>x.onchange=refresh);refresh();
+ document.getElementById("copyMail").onclick=()=>copyText(`Betreff: ${document.getElementById("mailSubject").value}\n\n${document.getElementById("mailBody").value}`);
+}
+
+function icsEscape(s=""){return String(s).replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;");}
+function dtLocal(date,time){return date.replaceAll("-","")+"T"+(time||"10:00").replace(":","")+"00";}
+function addMinutes(date,time,mins){
+ const d=new Date(`${date}T${time||"10:00"}:00`);d.setMinutes(d.getMinutes()+mins);
+ return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}T${String(d.getHours()).padStart(2,"0")}${String(d.getMinutes()).padStart(2,"0")}00`;
+}
+function downloadICS(p){
+ const r=p.record;if(!r.meeting.date||!r.meeting.confirmed)return;
+ const moved=(r.meeting.history||[]).length>0;
+ const title=`${moved?"UPDATE – ":""}Kooperations- und Planungsgespräch – ${p.name}`;
+ const desc=`Kooperations- und Planungsgespräch Vertragsrunde ${state.currentYear}${moved?"\\nTermin wurde im Dashboard verschoben. Falls der alte Termin im Kalender vorhanden ist, bitte löschen.":""}${r.meeting.bbb?`\\nBBB: ${r.meeting.bbb}`:""}`;
+ const ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Vertragsdashboard//DE","CALSCALE:GREGORIAN","BEGIN:VEVENT",
+  `UID:${p.id}-${state.currentYear}-KOOPGESPR@vertragsdashboard.local`,
+  `DTSTAMP:${new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"")}`,
+  `DTSTART;TZID=Europe/Berlin:${dtLocal(r.meeting.date,r.meeting.time)}`,
+  `DTEND;TZID=Europe/Berlin:${addMinutes(r.meeting.date,r.meeting.time,r.meeting.duration||60)}`,
+  `SUMMARY:${icsEscape(title)}`,`DESCRIPTION:${icsEscape(desc)}`,r.meeting.bbb?`URL:${r.meeting.bbb}`:"","END:VEVENT","END:VCALENDAR"].filter(Boolean).join("\r\n");
+ downloadBlob(ics,`${moved?"UPDATE_":""}Kooperationsgespraech_${p.id}_${r.meeting.date}.ics`,"text/calendar;charset=utf-8");
+}
+
+function downloadBlob(content,name,type){
+ const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function checkpointFileStamp(){
+ const d=new Date(),pad=n=>String(n).padStart(2,"0");
+ return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+}
+function exportCheckpoint(){
+ const exportTime=nowIso();
+ state.exportedAt=exportTime;
+ saveState(false);
+ const payload=JSON.stringify(state,null,2);
+ downloadBlob(payload,`Vertragsdashboard-daten-${checkpointFileStamp()}.json`,"application/json;charset=utf-8");
+ resetExportReminderMeta();
+ render();
+}
+document.getElementById("exportBtn").onclick=exportCheckpoint;
+document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
+document.getElementById("importFile").onchange=async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{
+   const obj=JSON.parse(await f.text());
+   if(!obj.partnerMaster||!obj.rounds)throw new Error();
+   if(!confirm("JSON-Checkpoint laden? Der aktuelle browserlokale Arbeitsstand wird dadurch ersetzt.")){e.target.value="";return;}
+   state=obj;migrateState();saveState(false);resetExportReminderMeta();
+   selectedPartnerId=Object.keys(currentRound().partnerRecords)[0]||null;render();
+ }catch(err){alert("Die Datei konnte nicht als gültiger Dashboard-Checkpoint gelesen werden.");}
+ e.target.value="";
+};
+
+document.getElementById("roundSelect").onchange=e=>{state.currentYear=Number(e.target.value);selectedPartnerId=Object.keys(currentRound().partnerRecords)[0]||null;saveState(false);render();};
+document.getElementById("newRoundBtn").onclick=()=>{
+ const active=state.partnerMaster.filter(p=>p.active),next=Math.max(...state.rounds.map(r=>Number(r.year)))+1;
+ openModal(`<h2>Neue Jahresrunde</h2><div class="field"><label>Jahr</label><input id="newYear" type="number" value="${next}"></div><div class="notice">${active.length} aktive Partner werden mit dem Standardprozess übernommen.</div><div class="modalfooter"><button class="btn" onclick="closeModal()">Abbrechen</button><button class="btn primary" id="createRound">Anlegen</button></div>`);
+ document.getElementById("createRound").onclick=()=>{
+   const y=Number(document.getElementById("newYear").value);if(state.rounds.some(r=>Number(r.year)===y)){alert("Jahresrunde existiert bereits.");return;}
+   state.rounds.push(makeRound(y,active.map(p=>p.id)));state.currentYear=y;selectedPartnerId=active[0]?.id||null;saveState();closeModal();render();
+ };
+};
+function partnerIdFromName(name){
+ let base=name.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Z0-9]+/g,"-").replace(/^-|-$/g,"")||"PARTNER";
+ let id=base,n=2;while(state.partnerMaster.some(p=>p.id===id)){id=`${base}-${n++}`;}return id;
+}
+function openNewPartnerModal(){
+ openModal(`<h2>Kooperationspartner anlegen</h2>
+ <div class="field"><label>Name</label><input id="newPartnerName" type="text" placeholder="Institution / Kooperationspartner"></div>
+ <div class="field" style="margin-top:8px"><label>Kurzname</label><input id="newPartnerShort" type="text" placeholder="optional"></div>
+ <label style="display:block;margin-top:10px"><input id="newPartnerCurrent" type="checkbox" checked> Zur laufenden Vertragsrunde ${state.currentYear} hinzufügen</label>
+ <div class="notice">Der neue Partner wird aktiv in den Partnerstamm aufgenommen. Bei Aufnahme in die laufende Runde erhält er automatisch den Standardprozess.</div>
+ <div class="modalfooter"><button class="btn" onclick="openPartnerMasterModal()">Zurück</button><button class="btn primary" id="createPartner">Anlegen</button></div>`);
+ document.getElementById("createPartner").onclick=()=>{
+  const name=document.getElementById("newPartnerName").value.trim();if(!name)return;
+  const short=document.getElementById("newPartnerShort").value.trim()||name,id=partnerIdFromName(name);
+  state.partnerMaster.push({id,name,shortName:short,active:true,contacts:[]});
+  if(document.getElementById("newPartnerCurrent").checked) currentRound().partnerRecords[id]=makeRecord();
+  selectedPartnerId=id;saveState();closeModal();render();
+ };
+}
+function openPartnerMasterModal(){
+ openModal(`<h2>Partnerstamm</h2><div class="muted" style="margin-bottom:10px">Aktive Partner werden in zukünftige Jahresrunden übernommen. Deaktivieren löscht keine bestehenden Jahresdaten.</div>
+ ${state.partnerMaster.map(p=>`<div class="pmPartner"><div class="pmPartnerHead"><input type="checkbox" data-active="${p.id}" ${p.active?"checked":""}><input style="flex:1" type="text" data-name="${p.id}" value="${esc(p.name)}"><input style="width:180px" type="text" data-short="${p.id}" value="${esc(p.shortName||"")}" placeholder="Kurzname"><span class="muted">${workContactsForPartner(p.id).length} Arbeitskontakt(e)</span></div></div>`).join("")}
+ <div style="margin-top:10px"><button class="btn small" id="newPartnerBtn">+ Kooperationspartner</button></div>
+ <div class="modalfooter"><button class="btn" onclick="closeModal()">Abbrechen</button><button class="btn primary" id="savePM">Übernehmen</button></div>`);
+ document.getElementById("newPartnerBtn").onclick=openNewPartnerModal;
+ document.getElementById("savePM").onclick=()=>{state.partnerMaster.forEach(p=>{p.active=document.querySelector(`[data-active="${p.id}"]`).checked;p.name=document.querySelector(`[data-name="${p.id}"]`).value.trim();p.shortName=document.querySelector(`[data-short="${p.id}"]`).value.trim();});saveState();closeModal();render();};
+}
+document.getElementById("partnerMasterBtn").onclick=openPartnerMasterModal;
+document.getElementById("internalContactsBtn").onclick=openInternalContactsModal;
+
+render();
+
+setInterval(renderExportReminder,60000);
+</script>
+</body>
+</html>
