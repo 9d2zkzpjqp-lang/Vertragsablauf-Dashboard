@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vertragsdashboard – Kooperationsverträge v1.9.10</title>
+<title>Vertragsdashboard – Kooperationsverträge v1.10</title>
 <style>
 :root{
   --bg:#f4f6fa;--card:#fff;--text:#1f2937;--muted:#6b7280;--line:#d9dee8;
@@ -415,6 +415,21 @@ summary{cursor:pointer;font-weight:700;font-size:14px}
 .subtask small{display:block;color:var(--muted);margin-top:2px}
 .protocolDetails{margin-top:0}
 .protocolActions{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.standardTextDetails{margin-top:0}
+.standardTextDetails>summary{cursor:pointer;font-weight:700}
+.standardTextBody{margin-top:10px;display:grid;gap:10px}
+.mailRecipientGrid{display:grid;gap:6px}
+.mailRecipient{
+ display:flex;align-items:flex-start;gap:8px;border:1px solid var(--line);
+ border-radius:8px;padding:8px 9px;background:#fff;font-size:12px
+}
+.mailRecipient input{width:17px;height:17px;margin:1px 0 0;flex:0 0 auto}
+.mailRecipientMeta{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.mailGeneratedGrid{display:grid;gap:8px}
+.mailGeneratedGrid textarea{min-height:150px}
+.mailTemplateEditor{border-top:1px dashed var(--line);padding-top:9px}
+.mailTemplateEditor textarea{min-height:160px}
+.templateHint{font-size:11px;color:var(--muted);line-height:1.4}
 .markdownPreview{border:1px solid var(--line);border-radius:9px;padding:10px;background:#fbfcfe;font-size:12px;line-height:1.5;min-height:50px}
 .markdownPreview h3,.markdownPreview h4,.markdownPreview h5{margin:8px 0 5px}
 .markdownPreview ul{margin:5px 0 5px 20px;padding:0}
@@ -461,7 +476,7 @@ summary{cursor:pointer;font-weight:700;font-size:14px}
   <div class="top">
     <div>
       <h1>Kooperationsverträge</h1>
-      <div class="sub">Version 1.9.10 · browserlokaler Arbeitsstand · portable JSON-Checkpoints</div>
+      <div class="sub">Version 1.10 · browserlokaler Arbeitsstand · portable JSON-Checkpoints</div>
     </div>
     <div class="actions">
       <button class="btn" id="partnerMasterBtn">Partnerstamm</button>
@@ -513,7 +528,7 @@ summary{cursor:pointer;font-weight:700;font-size:14px}
 </div>
 
 <script>
-const APP_VERSION = "1.9.10";
+const APP_VERSION = "1.10";
 const APP_ID = "vertragsdashboard";
 const CHECKPOINT_SCHEMA = "hla-vertragsdashboard-checkpoint-v1";
 const STORAGE_KEY = "vertragsdashboard_v1";
@@ -537,6 +552,15 @@ const EXTERNAL_CONTACT_CATEGORIES = [
  "Koordinationsstelle",
  "Sonstige"
 ];
+
+function makeStandardTexts(){
+ return {
+  protocolSend:{
+   subject:"Kooperations- und Planungsgespräch {{Jahr}}: Protokoll",
+   body:"{{Anrede_Empfänger}},\n\nanbei finden Sie das Protokoll unseres Kooperations- und Planungsgesprächs vom {{Gesprächsdatum}}.\n\nViele Grüße\n\nJan-Christof Kölb"
+  }
+ };
+}
 
 const STANDARD_STEPS = [
  {id:"s1",  title:"Einladung / Terminanfrage für Kooperationstreffen verschickt", owner:"intern", auto:"invitation"},
@@ -616,6 +640,7 @@ const DEFAULT_STATE = {
  appVersion:APP_VERSION,
  currentYear:2027,
  peopleMaster:[],
+ standardTexts:makeStandardTexts(),
  updatedAt:nowIso(),
  exportedAt:"",
  partnerMaster:[
@@ -649,6 +674,9 @@ function migrateState(){
  const needsLinearRemap=["1.0","2","3"].includes(fromVersion);
  state.updatedAt=state.updatedAt||state.lastChangeAt||nowIso();
  state.exportedAt=state.exportedAt||"";
+ const defaultTexts=makeStandardTexts();
+ state.standardTexts={...defaultTexts,...(state.standardTexts||{})};
+ state.standardTexts.protocolSend={...defaultTexts.protocolSend,...(state.standardTexts.protocolSend||{})};
  delete state.lastBackupAt;
  delete state.lastChangeAt;
  state.partnerMaster=state.partnerMaster||[];
@@ -886,6 +914,100 @@ function participantLabel(entry){
 }
 function participantText(entries){ return (entries||[]).map(participantLabel).filter(Boolean).join(", "); }
 function bundle(id){ return {...partnerMaster(id),contacts:workContactsForPartner(id),record:currentRound().partnerRecords[id]}; }
+
+
+function standardText(key){
+ const defaults=makeStandardTexts();
+ state.standardTexts=state.standardTexts||defaults;
+ state.standardTexts[key]={...(defaults[key]||{}),...(state.standardTexts[key]||{})};
+ return state.standardTexts[key];
+}
+function replaceTemplateTokens(text,replacements){
+ let out=String(text||"");
+ Object.entries(replacements).forEach(([key,value])=>{
+   out=out.split(`{{${key}}}`).join(value);
+ });
+ return out;
+}
+function protocolGreeting(person){
+ const stored=String(person?.greeting||"").trim().replace(/[,\s]+$/,"");
+ if(stored)return stored;
+ return `{{Briefanrede fehlt: ${personDisplayName(person)}}}`;
+}
+function protocolDefaultRecipientIds(p,r){
+ const contacts=workContactsForPartner(p.id);
+ const valid=new Set(contacts.map(x=>x.id));
+ const fromMeeting=(r.steps?.s5?.externalParticipants||[])
+   .filter(x=>x.kind==="person"&&valid.has(x.id))
+   .map(x=>x.id);
+ if(fromMeeting.length)return [...new Set(fromMeeting)];
+ const defaults=contacts.filter(x=>x.isDefault).map(x=>x.id);
+ if(defaults.length)return defaults;
+ return contacts.length===1?[contacts[0].id]:[];
+}
+function renderProtocolMail(p,r,recipientIds){
+ const contacts=workContactsForPartner(p.id);
+ const selected=contacts.filter(x=>recipientIds.includes(x.id));
+ const tpl=standardText("protocolSend");
+ const greeting=selected.length?selected.map(protocolGreeting).join(", ")+",":"{{Anrede_Empfänger}},";
+ const replacements={
+  "Anrede_Empfänger":greeting.replace(/,$/,""),
+  "Gesprächsdatum":r.meeting?.date?fmtDate(r.meeting.date):"{{Gesprächsdatum}}",
+  "Jahr":String(state.currentYear)
+ };
+ return {
+  subject:replaceTemplateTokens(tpl.subject,replacements),
+  body:replaceTemplateTokens(tpl.body,replacements),
+  recipients:selected
+ };
+}
+function protocolMailWorkspaceHtml(p,r){
+ const contacts=workContactsForPartner(p.id);
+ const defaults=new Set(protocolDefaultRecipientIds(p,r));
+ const tpl=standardText("protocolSend");
+ return `<div class="full workspaceBlock">
+  <details class="standardTextDetails">
+   <summary>Standardtext für Protokollversand</summary>
+   <div class="standardTextBody">
+    <div>
+     <b>Empfänger</b>
+     <div class="muted" style="margin:3px 0 7px">Mehrfachauswahl möglich. Die Anrede wird aus den hinterlegten Briefanreden erzeugt.</div>
+     <div class="mailRecipientGrid">
+      ${contacts.length?contacts.map(person=>`<label class="mailRecipient">
+       <input class="protocolMailRecipient" type="checkbox" value="${person.id}" ${defaults.has(person.id)?"checked":""}>
+       <span><b>${esc(personDisplayName(person))}</b>${person.email?`<span class="mailRecipientMeta">${esc(person.email)}</span>`:""}${person.greeting?`<span class="mailRecipientMeta">Briefanrede: ${esc(person.greeting)}</span>`:`<span class="mailRecipientMeta">⚠ Briefanrede nicht hinterlegt</span>`}</span>
+      </label>`).join(""):'<div class="empty">Noch keine externen Arbeitskontakte hinterlegt.</div>'}
+     </div>
+    </div>
+
+    <div class="mailGeneratedGrid">
+     <div class="field"><label>Betreff</label><input id="protocolMailSubject" type="text"></div>
+     <div class="field"><label>Text</label><textarea id="protocolMailBody"></textarea></div>
+     <div class="protocolActions">
+      <button class="btn small" type="button" id="regenerateProtocolMail">Neu aus Vorlage erzeugen</button>
+      <button class="btn small" type="button" id="copyProtocolRecipients">E-Mail-Adressen kopieren</button>
+      <button class="btn small" type="button" id="copyProtocolSubject">Betreff kopieren</button>
+      <button class="btn small primary" type="button" id="copyProtocolBody">Text kopieren</button>
+     </div>
+     <div class="templateHint">Das Kopieren markiert „Protokoll versendet“ bewusst nicht automatisch als erledigt.</div>
+    </div>
+
+    <details class="mailTemplateEditor">
+     <summary>Vorlage bearbeiten</summary>
+     <div style="margin-top:9px;display:grid;gap:8px">
+      <div class="field"><label>Betreff-Vorlage</label><input id="protocolTemplateSubject" type="text" value="${esc(tpl.subject)}"></div>
+      <div class="field"><label>Text-Vorlage</label><textarea id="protocolTemplateBody">${esc(tpl.body)}</textarea></div>
+      <div class="templateHint">Verfügbare Platzhalter: <code>{{Jahr}}</code>, <code>{{Anrede_Empfänger}}</code>, <code>{{Gesprächsdatum}}</code>. Die Vorlage gilt global für alle Kooperationspartner.</div>
+      <div class="protocolActions">
+       <button class="btn small primary" type="button" id="saveProtocolTemplate">Vorlage speichern</button>
+       <button class="btn small" type="button" id="resetProtocolTemplate">Standard wiederherstellen</button>
+      </div>
+     </div>
+    </details>
+   </div>
+  </details>
+ </div>`;
+}
 
 function parseDocumentRef(raw){
  const input=(raw||"").trim();
@@ -1942,6 +2064,7 @@ function openStepDetail(p,stepId){
     <label class="subtask"><input id="sdProtocolCreated" type="checkbox" ${(st.protocolCreated||String(st.protocolMarkdown||"").trim())?"checked":""}><span>Protokoll erstellt<small>Wird automatisch markiert, sobald unten Protokolltext vorhanden ist; kann aber auch manuell gesetzt werden.</small></span></label>
     <label class="subtask"><input id="sdProtocolSent" type="checkbox" ${st.protocolSent?"checked":""}><span>Protokoll versendet</span></label>
    </div></div>`:""}
+  ${stepId==="s5"?protocolMailWorkspaceHtml(p,r):""}
   ${cfg.referenceFrom?documentReferenceHtml(r,cfg.referenceFrom):""}
   ${documentInputHtml(cfg,initialRaw)}
   ${stepId==="s5"?`<div class="full workspaceBlock"><label class="subtask"><input id="sdNextcloudFiled" type="checkbox" ${(st.nextcloudFiled||initialRaw)?"checked":""}><span>Protokoll auf Nextcloud abgelegt<small>Wird automatisch markiert, sobald ein Protokoll-/Ablagepfad hinterlegt ist; kann aber auch manuell gesetzt werden.</small></span></label></div>`:""}
@@ -2071,6 +2194,46 @@ function openStepDetail(p,stepId){
    protocolEl.oninput=()=>{if(protocolEl.value.trim())createdEl.checked=true;};
    document.getElementById("previewProtocol").onclick=()=>{document.getElementById("protocolPreview").innerHTML=simpleMarkdownHtml(protocolEl.value);};
    document.getElementById("copyProtocol").onclick=()=>copyText(protocolEl.value);
+
+   const recipientEls=[...document.querySelectorAll(".protocolMailRecipient")];
+   const mailSubject=document.getElementById("protocolMailSubject");
+   const mailBody=document.getElementById("protocolMailBody");
+   const selectedRecipientIds=()=>recipientEls.filter(x=>x.checked).map(x=>x.value);
+   const regenerateMail=()=>{
+     const rendered=renderProtocolMail(p,r,selectedRecipientIds());
+     mailSubject.value=rendered.subject;
+     mailBody.value=rendered.body;
+   };
+   recipientEls.forEach(el=>el.onchange=regenerateMail);
+   document.getElementById("regenerateProtocolMail").onclick=regenerateMail;
+   document.getElementById("copyProtocolRecipients").onclick=()=>{
+     const rendered=renderProtocolMail(p,r,selectedRecipientIds());
+     copyText(rendered.recipients.map(x=>x.email).filter(Boolean).join("; "));
+   };
+   document.getElementById("copyProtocolSubject").onclick=()=>copyText(mailSubject.value);
+   document.getElementById("copyProtocolBody").onclick=()=>copyText(mailBody.value);
+   document.getElementById("saveProtocolTemplate").onclick=()=>{
+     state.standardTexts=state.standardTexts||makeStandardTexts();
+     state.standardTexts.protocolSend={
+       subject:document.getElementById("protocolTemplateSubject").value,
+       body:document.getElementById("protocolTemplateBody").value
+     };
+     saveState();
+     regenerateMail();
+     const btn=document.getElementById("saveProtocolTemplate");
+     const old=btn.textContent;btn.textContent="Gespeichert ✓";
+     setTimeout(()=>{if(document.body.contains(btn))btn.textContent=old;},1000);
+   };
+   document.getElementById("resetProtocolTemplate").onclick=()=>{
+     const defaults=makeStandardTexts().protocolSend;
+     document.getElementById("protocolTemplateSubject").value=defaults.subject;
+     document.getElementById("protocolTemplateBody").value=defaults.body;
+     state.standardTexts=state.standardTexts||makeStandardTexts();
+     state.standardTexts.protocolSend=clone(defaults);
+     saveState();
+     regenerateMail();
+   };
+   regenerateMail();
  }
 
  document.getElementById("saveStepDetail").onclick=()=>{
